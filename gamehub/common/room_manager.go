@@ -1,0 +1,311 @@
+package common
+
+import (
+	"fmt"
+	"sync"
+	"time"
+
+	"github.com/apexkit/gamekit/gamehub/const_val"
+	"github.com/apexkit/gamekit/gamehub/event"
+	"github.com/apexkit/gamekit/gamehub/types"
+	"github.com/apexkit/gamekit/sfs/utils"
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/ouqiang/timewheel"
+	"github.com/qd2ss/sfs"
+)
+
+type RoomManager struct {
+	gameBrand types.GameBrand
+
+	roomCreator types.RoomCreator
+
+	roomMap   map[string][]types.RoomImp
+	roomMapMu sync.RWMutex
+
+	playerRoomMap   map[string]types.RoomImp
+	playerRoomMapMu sync.RWMutex
+
+	tableMatcherType types.TableMatcherType
+
+	players sync.Map // 存储玩家
+
+	log *log.Helper
+
+	tw *timewheel.TimeWheel //时间轮
+}
+
+func NewRoomManager(
+	gameBrand types.GameBrand,
+	roomCreator types.RoomCreator,
+	tableMatcherType types.TableMatcherType,
+	logger log.Logger) *RoomManager {
+	rm := &RoomManager{
+		gameBrand:        gameBrand,
+		roomCreator:      roomCreator,
+		log:              log.NewHelper(logger),
+		tableMatcherType: tableMatcherType,
+		roomMap:          make(map[string][]types.RoomImp),
+		playerRoomMap:    make(map[string]types.RoomImp),
+	}
+
+	//==================================================仅和inout有关系===========================================================
+	// inout需要使用定时器发送心跳
+	if gameBrand == types.GameBrand_Inout {
+		tw := timewheel.New(1*time.Second, 3600, func(data interface{}) {
+			rm.onTimer(data)
+		})
+
+		// 启动时间轮
+		tw.Start()
+
+		tw.AddTimer(time.Duration(const_val.InoutPingTime)*time.Second, const_val.InoutPingTimeWheelKey, &event.PingPongEvent{})
+
+		rm.tw = tw
+	}
+	//============================================================================================================================
+
+	return rm
+}
+
+func (r *RoomManager) ExitRoom(player types.PlayerImp, isDisconnect bool) {
+	room := player.GetRoom()
+
+	defer func() {
+		player.SetRoom(nil)
+		player.SetRoomManager(nil)
+	}()
+
+	//防止执行两次，使用LoadAndDelete会安全点
+	r.players.Delete(player.GetPlayerIdent())
+
+	r.playerRoomMapMu.Lock()
+	playerIdent := player.GetPlayerIdent()
+	_, ok := r.playerRoomMap[playerIdent]
+	if ok {
+		delete(r.playerRoomMap, playerIdent)
+	}
+	r.playerRoomMapMu.Unlock()
+
+	// 如果需要断开连接，那么关闭连接
+	if isDisconnect {
+		player.CloseConn()
+	}
+
+	// 如果是一次性房间，那么通知room也释放内存
+	if r.tableMatcherType == types.TableMatcherType_SINGLE {
+		room.OnDispose()
+	} else {
+		r.roomMapMu.Lock()
+		// 检测到了空房间，则销毁房间
+		if room.GetPlayerNum() <= 0 {
+			for roomType, rooms := range r.roomMap {
+				kept := rooms[:0]
+				for _, one := range rooms {
+					if one != room {
+						kept = append(kept, one)
+					}
+				}
+				if len(kept) == 0 {
+					delete(r.roomMap, roomType)
+				} else {
+					r.roomMap[roomType] = kept
+				}
+			}
+
+			room.OnDispose()
+		}
+		r.roomMapMu.Unlock()
+	}
+}
+
+// 尝试重连游戏， 返回的第一个参数是错误信息，第二个参数是是否进行了重连
+func (r *RoomManager) TryReConnectGame(player types.PlayerImp) (error, bool) {
+	//========================================================
+	//判断是不是断线重连回来的
+	r.playerRoomMapMu.Lock()
+	playerIdent := player.GetPlayerIdent()
+	room, ok := r.playerRoomMap[playerIdent]
+	r.playerRoomMapMu.Unlock()
+	player.SetRoom(room)
+
+	if ok {
+		if value, ok := r.players.Load(playerIdent); ok {
+			if oldPlayer, ok := value.(*Player); ok && oldPlayer.conn != nil {
+				// 以防止，旧的客户端没有完全处理干净
+				oldPlayer.conn.Close()
+			}
+		}
+
+		// 更新管理器记录的新的玩家对像
+		r.players.Store(playerIdent, player)
+		player.SetRoomManager(r)
+
+		return room.OnReConnect(player), ok
+	}
+	//=========================配房逻辑==================================
+	return nil, ok
+}
+
+// 切换房间，可能因为rtp发生了变化，然后需要切换房间。
+func (r *RoomManager) SwitchRoom(player types.PlayerImp, args interface{}) error {
+	// 从旧房间移除（不关闭连接），再进入新房间
+	if oldRoom := player.GetRoom(); oldRoom != nil {
+		_ = oldRoom.OnDisConnect(player)
+	}
+	// 退出旧房间
+	r.ExitRoom(player, false)
+
+	player.SetRoomManager(r)
+
+	roomTypeStr := fmt.Sprintf("%v-%v", player.GetPlayerInfo().AppID, player.GetRtpStr())
+	roomArgs := &types.RtpRoomArgs{
+		Appid:    player.GetPlayerInfo().AppID,
+		Rtp:      player.GetRtpStr(),
+		Currency: player.GetPlayerInfo().Currency,
+	}
+	room := r.roomCreator.CreateRoom(roomArgs)
+
+	r.roomMapMu.Lock()
+	if err := room.OnSwitch(player, args); err == nil {
+		player.SetRoom(room)
+		r.roomMap[roomTypeStr] = append(r.roomMap[roomTypeStr], room)
+	} else {
+		r.log.Errorf("switch room create room %s failed, err: %v", roomTypeStr, err)
+		r.roomMapMu.Unlock()
+		return err
+	}
+	r.roomMapMu.Unlock()
+
+	playerIdent := player.GetPlayerIdent()
+	r.playerRoomMapMu.Lock()
+	r.playerRoomMap[playerIdent] = player.GetRoom()
+	r.players.Store(playerIdent, player)
+	r.playerRoomMapMu.Unlock()
+
+	return nil
+}
+
+func (r *RoomManager) OnJoin(player types.PlayerImp, roomType string, roomArgs interface{}) error {
+	player.SetRoomManager(r)
+
+	r.roomMapMu.Lock()
+	if roomType != "" {
+		if rooms, ok := r.roomMap[roomType]; ok {
+			for _, room := range rooms {
+				// 找到了一个可以登陆的房间
+				if err := room.OnJoin(player); err == nil {
+					player.SetRoom(room)
+					break
+				}
+			}
+		}
+	}
+
+	if player.GetRoom() == nil {
+		room := r.roomCreator.CreateRoom(roomArgs)
+		if err := room.OnJoin(player); err == nil {
+			player.SetRoom(room)
+		} else {
+			r.log.Errorf("create room %s failed, err: %v", roomType, err)
+			r.roomMapMu.Unlock()
+			return err
+		}
+
+		if roomType != "" {
+			r.roomMap[roomType] = append(r.roomMap[roomType], room)
+		}
+	}
+	r.roomMapMu.Unlock()
+
+	playerIdent := player.GetPlayerIdent()
+
+	// 保存登陆信息，以便后续判断是否是重连回来的用户
+	r.playerRoomMapMu.Lock()
+	r.playerRoomMap[playerIdent] = player.GetRoom()
+	r.players.Store(playerIdent, player)
+	r.playerRoomMapMu.Unlock()
+	return nil
+}
+
+func (r *RoomManager) OnMessage(player types.PlayerImp, msg interface{}) error {
+	if r.gameBrand == types.GameBrand_Spribe {
+		msgData, ok := msg.(sfs.SFSObject)
+		if !ok {
+			return fmt.Errorf("OnMessage: invalid data type %T", msg)
+		}
+
+		// 2. cmd 校验
+		cmdVal, ok := msgData["c"]
+		if !ok {
+			return fmt.Errorf("OnMessage: missing cmd field")
+		}
+
+		cmd, ok := cmdVal.(string)
+		if !ok || cmd == "" {
+			return fmt.Errorf("OnMessage: invalid cmd type %T", cmdVal)
+		}
+
+		if cmd == "PING_REQUEST" {
+			rsp := sfs.SFSObject{
+				"c": "PING_RESPONSE",
+				"p": sfs.SFSObject{},
+			}
+
+			buff, err := utils.Pack(1, 13, rsp)
+			if err != nil {
+				return err
+			}
+
+			return player.SendBinary(buff)
+		}
+	}
+
+	room := player.GetRoom()
+	if room == nil {
+		return nil
+	}
+	return room.OnMessage(player, msg)
+}
+
+func (r *RoomManager) OnDisConnect(player types.PlayerImp) error {
+
+	room := player.GetRoom()
+	if room != nil {
+		return room.OnDisConnect(player)
+	}
+	return nil
+}
+
+// 定时器处理
+func (r *RoomManager) onTimer(data interface{}) {
+	if r.gameBrand == types.GameBrand_Inout {
+		r.onInoutTimer(data)
+	}
+
+}
+
+// =================================================仅和inout有关系=======================================================================
+func (r *RoomManager) onInoutTimer(data interface{}) {
+	switch data.(type) {
+	case *event.PingPongEvent:
+		r.tw.AddTimer(time.Duration(const_val.InoutPingTime)*time.Second, const_val.InoutPingTimeWheelKey, &event.PingPongEvent{})
+		r.broadInoutPing()
+	}
+}
+
+func (r *RoomManager) broadInoutPing() {
+	players := []types.PlayerImp{}
+
+	r.players.Range(func(key, value interface{}) bool {
+		if player, ok := value.(types.PlayerImp); ok && player.IsConnect() {
+			players = append(players, player)
+		}
+		return true // 继续迭代
+	})
+
+	for _, play := range players {
+		play.SendString("2")
+	}
+}
+
+//============================================================================================================================
