@@ -29,13 +29,13 @@ func (c *AppGroupInfoCache) GetByAppID(appID string) (*models.AppGroupInfo, erro
 	if err != nil {
 		return nil, err
 	}
-	return c.GetByGroupID(appGroupID)
+	return c.GetByAppGroupID(appGroupID)
 }
 
-// GetByGroupID 按 group_id 获取总商户信息
-func (c *AppGroupInfoCache) GetByGroupID(groupID string) (*models.AppGroupInfo, error) {
-	return c.get(c.cacheKeyByGroupID(groupID), func() (*models.AppGroupInfo, error) {
-		return c.refreshByGroupID(groupID)
+// GetByAppGroupID 按 group_id 获取总商户信息
+func (c *AppGroupInfoCache) GetByAppGroupID(appGroupID string) (*models.AppGroupInfo, error) {
+	return c.get(c.cacheKeyByAppGroupID(appGroupID), func() (*models.AppGroupInfo, error) {
+		return c.refreshByAppGroupID(appGroupID)
 	})
 }
 
@@ -51,9 +51,9 @@ func (c *AppGroupInfoCache) RefreshByID(id uint64) (*models.AppGroupInfo, error)
 	return c.refreshByID(id)
 }
 
-// RefreshByGroupID 刷新单个 AppGroupInfo 缓存（按 group_id）
-func (c *AppGroupInfoCache) RefreshByGroupID(groupID string) (*models.AppGroupInfo, error) {
-	return c.refreshByGroupID(groupID)
+// RefreshByAppGroupID 刷新单个 AppGroupInfo 缓存（按 group_id）
+func (c *AppGroupInfoCache) RefreshByAppGroupID(appGroupID string) (*models.AppGroupInfo, error) {
+	return c.refreshByAppGroupID(appGroupID)
 }
 
 // RefreshByAccessKey 刷新单个 AppGroupInfo 缓存（按 access_key）
@@ -69,7 +69,7 @@ func (c *AppGroupInfoCache) setCache(agi models.AppGroupInfo) error {
 	ctx := context.Background()
 	keys := []string{
 		c.cacheKeyByID(agi.Id),
-		c.cacheKeyByGroupID(agi.GroupId),
+		c.cacheKeyByAppGroupID(agi.GroupId),
 	}
 	if agi.AccessKey != "" {
 		keys = append(keys, c.cacheKeyByAccessKey(agi.AccessKey))
@@ -108,9 +108,9 @@ func (c *AppGroupInfoCache) refreshByID(id uint64) (*models.AppGroupInfo, error)
 	return &agi, nil
 }
 
-func (c *AppGroupInfoCache) refreshByGroupID(groupID string) (*models.AppGroupInfo, error) {
+func (c *AppGroupInfoCache) refreshByAppGroupID(appGroupID string) (*models.AppGroupInfo, error) {
 	var agi models.AppGroupInfo
-	if err := c.db.Where("group_id = ?", groupID).First(&agi).Error; err != nil {
+	if err := c.db.Where("group_id = ?", appGroupID).First(&agi).Error; err != nil {
 		return nil, err
 	}
 	if err := c.setCache(agi); err != nil {
@@ -134,8 +134,8 @@ func (c *AppGroupInfoCache) cacheKeyByID(id uint64) string {
 	return fmt.Sprintf("%s:id:%d", appGroupInfoCacheKeyPrefix, id)
 }
 
-func (c *AppGroupInfoCache) cacheKeyByGroupID(groupID string) string {
-	return fmt.Sprintf("%s:group_id:%s", appGroupInfoCacheKeyPrefix, groupID)
+func (c *AppGroupInfoCache) cacheKeyByAppGroupID(appGroupID string) string {
+	return fmt.Sprintf("%s:group_id:%s", appGroupInfoCacheKeyPrefix, appGroupID)
 }
 
 func (c *AppGroupInfoCache) cacheKeyByAccessKey(accessKey string) string {

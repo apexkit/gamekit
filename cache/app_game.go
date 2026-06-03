@@ -22,28 +22,28 @@ func NewGameCache(rdb *redis.Client, db *gorm.DB) *GameCache {
 	return &GameCache{rdb: rdb, db: db}
 }
 
-// GetByID 按 game 表主键 id 获取游戏
-func (c *GameCache) GetByID(id int64) (*models.Game, error) {
-	return c.get(c.cacheKeyByID(id), func() (*models.Game, error) {
-		return c.refreshByID(id)
+// GetByPlatformGameID 按平台游戏 ID（game 表主键 id）获取游戏
+func (c *GameCache) GetByPlatformGameID(platformGameID int64) (*models.Game, error) {
+	return c.get(c.cacheKeyByPlatformGameID(platformGameID), func() (*models.Game, error) {
+		return c.refreshByPlatformGameID(platformGameID)
 	})
 }
 
-// GetByBrandAndVendorGameID 按 game_brand + 厂商原始 game_id 获取游戏
-func (c *GameCache) GetByBrandAndVendorGameID(gameBrand, vendorGameId string) (*models.Game, error) {
-	return c.get(c.cacheKeyByBrandAndVendorGameID(gameBrand, vendorGameId), func() (*models.Game, error) {
-		return c.refreshByBrandAndVendorGameID(gameBrand, vendorGameId)
+// GetByBrandAndGameID 按 game_brand + 原厂 game_id 获取游戏
+func (c *GameCache) GetByBrandAndGameID(gameBrand, gameId string) (*models.Game, error) {
+	return c.get(c.cacheKeyByBrandAndGameID(gameBrand, gameId), func() (*models.Game, error) {
+		return c.refreshByBrandAndGameID(gameBrand, gameId)
 	})
 }
 
-// RefreshByID 刷新单个 Game 缓存（按 game 表主键 id）
-func (c *GameCache) RefreshByID(id int64) (*models.Game, error) {
-	return c.refreshByID(id)
+// RefreshByPlatformGameID 刷新单个 Game 缓存（按平台游戏 ID）
+func (c *GameCache) RefreshByPlatformGameID(platformGameID int64) (*models.Game, error) {
+	return c.refreshByPlatformGameID(platformGameID)
 }
 
-// RefreshByBrandAndVendorGameID 刷新单个 Game 缓存（按 game_brand + 厂商原始 game_id）
-func (c *GameCache) RefreshByBrandAndVendorGameID(gameBrand, vendorGameId string) (*models.Game, error) {
-	return c.refreshByBrandAndVendorGameID(gameBrand, vendorGameId)
+// RefreshByBrandAndGameID 刷新单个 Game 缓存（按 game_brand + 原厂 game_id）
+func (c *GameCache) RefreshByBrandAndGameID(gameBrand, gameId string) (*models.Game, error) {
+	return c.refreshByBrandAndGameID(gameBrand, gameId)
 }
 
 func (c *GameCache) setCache(game models.Game) error {
@@ -53,8 +53,8 @@ func (c *GameCache) setCache(game models.Game) error {
 	}
 	ctx := context.Background()
 	for _, key := range []string{
-		c.cacheKeyByID(game.ID),
-		c.cacheKeyByBrandAndVendorGameID(game.GameBrand, game.GameId),
+		c.cacheKeyByPlatformGameID(game.PlatformGameID),
+		c.cacheKeyByBrandAndGameID(game.GameBrand, game.GameId),
 	} {
 		if err := c.rdb.Set(ctx, key, data, 0).Err(); err != nil {
 			return err
@@ -78,9 +78,9 @@ func (c *GameCache) get(cacheKey string, refresh func() (*models.Game, error)) (
 	return &game, nil
 }
 
-func (c *GameCache) refreshByID(id int64) (*models.Game, error) {
+func (c *GameCache) refreshByPlatformGameID(platformGameID int64) (*models.Game, error) {
 	var game models.Game
-	if err := c.db.Where("id = ?", id).First(&game).Error; err != nil {
+	if err := c.db.Where("id = ?", platformGameID).First(&game).Error; err != nil {
 		return nil, err
 	}
 	if err := c.setCache(game); err != nil {
@@ -89,9 +89,9 @@ func (c *GameCache) refreshByID(id int64) (*models.Game, error) {
 	return &game, nil
 }
 
-func (c *GameCache) refreshByBrandAndVendorGameID(gameBrand, vendorGameId string) (*models.Game, error) {
+func (c *GameCache) refreshByBrandAndGameID(gameBrand, gameId string) (*models.Game, error) {
 	var game models.Game
-	if err := c.db.Where("game_brand = ? AND game_id = ?", gameBrand, vendorGameId).First(&game).Error; err != nil {
+	if err := c.db.Where("game_brand = ? AND game_id = ?", gameBrand, gameId).First(&game).Error; err != nil {
 		return nil, err
 	}
 	if err := c.setCache(game); err != nil {
@@ -100,10 +100,10 @@ func (c *GameCache) refreshByBrandAndVendorGameID(gameBrand, vendorGameId string
 	return &game, nil
 }
 
-func (c *GameCache) cacheKeyByID(id int64) string {
-	return fmt.Sprintf("%s:id:%d", gameCacheKeyPrefix, id)
+func (c *GameCache) cacheKeyByPlatformGameID(platformGameID int64) string {
+	return fmt.Sprintf("%s:id:%d", gameCacheKeyPrefix, platformGameID)
 }
 
-func (c *GameCache) cacheKeyByBrandAndVendorGameID(gameBrand, vendorGameId string) string {
-	return fmt.Sprintf("%s:brand:%s:%s", gameCacheKeyPrefix, gameBrand, vendorGameId)
+func (c *GameCache) cacheKeyByBrandAndGameID(gameBrand, gameId string) string {
+	return fmt.Sprintf("%s:brand:%s:%s", gameCacheKeyPrefix, gameBrand, gameId)
 }

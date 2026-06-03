@@ -7,8 +7,9 @@ type AppGameRecord struct {
 	ID                  int64      `gorm:"column:id;type:bigint;primaryKey;autoIncrement" json:"id"`
 	AppID               string     `gorm:"column:app_id;type:varchar(32);not null;uniqueIndex:udx_app_transactionid,priority:1;index:idx_app_round,priority:1;index:idx_app_player_game_round,priority:1;index:idx_appid_createdat,priority:1" json:"app_id"`
 	PlayerID            string     `gorm:"column:player_id;type:varchar(64);not null;index:idx_app_player_game_round,priority:2" json:"player_id"`
-	GameID              string     `gorm:"column:game_id;type:varchar(32);not null;index:idx_app_player_game_round,priority:4" json:"game_id"`
-	GameBrand           string     `gorm:"column:game_brand;type:varchar(32);not null;index:idx_app_player_game_round,priority:3" json:"game_brand"`
+	GameID              string     `gorm:"column:game_id;type:varchar(32);not null;index:idx_app_player_game_round,priority:4;comment:厂商游戏ID" json:"game_id"`
+	GameBrand           string     `gorm:"column:game_brand;type:varchar(32);not null;index:idx_app_player_game_round,priority:3;comment:游戏厂商" json:"game_brand"`
+	PlatformGameID      int64      `gorm:"column:platform_game_id;type:bigint;comment:平台游戏ID(game表主键id)" json:"platform_game_id"`
 	GameType            string     `gorm:"column:game_type;type:varchar(32)" json:"game_type"`
 	RoundID             string     `gorm:"column:round_id;type:varchar(64);index:idx_app_round,priority:2;index:idx_app_player_game_round,priority:5" json:"round_id"`
 	PreRoundID          string     `gorm:"column:pre_round_id;type:varchar(64)" json:"pre_round_id"`
