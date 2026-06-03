@@ -37,4 +37,4 @@ bin/
 .idea/
 *.swp
 
-log/
+/log/
