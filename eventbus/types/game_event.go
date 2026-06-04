@@ -4,12 +4,13 @@ const GAME_EVENT_TOPIC = "ApiGameEvent"
 
 // 派奖事件
 type WinEvent struct {
-	AppId            string  `json:"appId,omitempty"`     //商户Id
-	GameBrand        string  `json:"gameBrand,omitempty"` //游戏品牌
-	GameType         string  `json:"gameType"`            // 游戏类型
-	GameId           string  `json:"gameId,omitempty"`    //游戏id
-	PlayerId         string  `json:"playerId,omitempty"`  //账号id
-	RoundId          string  `json:"roundId,omitempty"`   //游戏回合, 长度64以內。
+	AppId string `json:"appId,omitempty"` //商户Id
+	// GameBrand        string  `json:"gameBrand,omitempty"` //游戏品牌
+	// GameType         string  `json:"gameType"`            // 游戏类型
+	// GameId           string  `json:"gameId,omitempty"`    //游戏id
+	PlatformGameID   int64   `json:"platformGameID,omitempty"` //平台游戏id
+	PlayerId         string  `json:"playerId,omitempty"`       //账号id
+	RoundId          string  `json:"roundId,omitempty"`        //游戏回合, 长度64以內。
 	Currency         string  `json:"currency,omitempty"`
 	Bet              float64 `json:"bet,omitempty"`              //下注
 	Win              float64 `json:"win"`                        //赢钱
