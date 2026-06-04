@@ -3,6 +3,7 @@ package eventbus
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -19,10 +20,17 @@ type KafkaBus struct {
 	kafkaReadLock  sync.Mutex
 }
 
-// 创建一个 Kafka 事件总线
-func NewKafkaBus(brokers []string) *KafkaBus {
+// 创建一个 Kafka 事件总线，brokersCSV 为逗号分隔的 broker 地址，如 "host1:9092,host2:9092"
+func NewKafkaBus(brokersCSV string) EventBus {
+	segments := strings.Split(brokersCSV, ",")
+	brokerAddrs := make([]string, 0, len(segments))
+	for _, addr := range segments {
+		if addr = strings.TrimSpace(addr); addr != "" {
+			brokerAddrs = append(brokerAddrs, addr)
+		}
+	}
 	return &KafkaBus{
-		brokers: brokers,
+		brokers: brokerAddrs,
 		writers: make(map[string]*kafka.Writer),
 		readers: make(map[string]*kafka.Reader),
 	}

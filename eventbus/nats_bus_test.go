@@ -10,10 +10,10 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 )
 
-const brokers = "sss.cpigame.com:19092"
+const natsURL = "nats://localhost:4222"
 
-func TestPublishWinEvent(t *testing.T) {
-	bus := NewKafkaBus(brokers)
+func TestNatsPublishWinEvent(t *testing.T) {
+	bus := NewNatsBus(natsURL)
 	for i := 0; i < 100; i++ {
 		err := bus.Publish(context.Background(), types.GAME_EVENT_TOPIC, NewEvent("win", "test", &types.WinEvent{
 			AppId:            "1001",
@@ -35,8 +35,8 @@ func TestPublishWinEvent(t *testing.T) {
 	bus.Close()
 }
 
-func TestPublish(t *testing.T) {
-	bus := NewKafkaBus(brokers)
+func TestNatsPublish(t *testing.T) {
+	bus := NewNatsBus(natsURL)
 	for i := 0; i < 100; i++ {
 		err := bus.Publish(context.Background(), "test", NewEvent("test", "test", fmt.Sprintf("event test %d", i)))
 		if err != nil {
@@ -46,8 +46,8 @@ func TestPublish(t *testing.T) {
 	bus.Close()
 }
 
-func TestSubscribe(t *testing.T) {
-	bus := NewKafkaBus(brokers)
+func TestNatsSubscribe(t *testing.T) {
+	bus := NewNatsBus(natsURL)
 	err := bus.Subscribe(context.Background(), "test", "test", func(ctx context.Context, evt *Event) error {
 		log.Infof("Received event: %#v", evt)
 		log.Infof("Event payload: %s", string(evt.Payload))

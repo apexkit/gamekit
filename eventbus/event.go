@@ -2,8 +2,10 @@ package eventbus
 
 import (
 	"encoding/json"
-	"github.com/go-kratos/kratos/v2/log"
 	"time"
+
+	"github.com/go-kratos/kratos/v2/log"
+	"github.com/google/uuid"
 )
 
 // Event 是通用事件结构
@@ -41,15 +43,10 @@ func NewEvent(eventType, source string, payload interface{}) *Event {
 		return nil
 	}
 	return &Event{
-		EventID:   generateUUID(),
+		EventID:   uuid.New().String(),
 		Type:      eventType,
 		Source:    source,
 		Payload:   payloadData,
 		Timestamp: time.Now().Unix(),
 	}
-}
-
-// 简单 UUID 生成
-func generateUUID() string {
-	return time.Now().Format("20060102150405.000000000")
 }
