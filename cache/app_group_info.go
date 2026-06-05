@@ -39,13 +39,6 @@ func (c *AppGroupInfoCache) GetByAppGroupID(appGroupID string) (*models.AppGroup
 	})
 }
 
-// GetByAccessKey 按 access_key 获取总商户信息
-func (c *AppGroupInfoCache) GetByAccessKey(accessKey string) (*models.AppGroupInfo, error) {
-	return c.get(c.cacheKeyByAccessKey(accessKey), func() (*models.AppGroupInfo, error) {
-		return c.refreshByAccessKey(accessKey)
-	})
-}
-
 // RefreshByID 刷新单个 AppGroupInfo 缓存（按表主键 id）
 func (c *AppGroupInfoCache) RefreshByID(id uint64) (*models.AppGroupInfo, error) {
 	return c.refreshByID(id)
@@ -54,11 +47,6 @@ func (c *AppGroupInfoCache) RefreshByID(id uint64) (*models.AppGroupInfo, error)
 // RefreshByAppGroupID 刷新单个 AppGroupInfo 缓存（按 group_id）
 func (c *AppGroupInfoCache) RefreshByAppGroupID(appGroupID string) (*models.AppGroupInfo, error) {
 	return c.refreshByAppGroupID(appGroupID)
-}
-
-// RefreshByAccessKey 刷新单个 AppGroupInfo 缓存（按 access_key）
-func (c *AppGroupInfoCache) RefreshByAccessKey(accessKey string) (*models.AppGroupInfo, error) {
-	return c.refreshByAccessKey(accessKey)
 }
 
 func (c *AppGroupInfoCache) setCache(agi models.AppGroupInfo) error {
@@ -70,9 +58,6 @@ func (c *AppGroupInfoCache) setCache(agi models.AppGroupInfo) error {
 	keys := []string{
 		c.cacheKeyByID(agi.Id),
 		c.cacheKeyByAppGroupID(agi.GroupId),
-	}
-	if agi.AccessKey != "" {
-		keys = append(keys, c.cacheKeyByAccessKey(agi.AccessKey))
 	}
 	for _, key := range keys {
 		if err := c.rdb.Set(ctx, key, data, 0).Err(); err != nil {
@@ -119,25 +104,10 @@ func (c *AppGroupInfoCache) refreshByAppGroupID(appGroupID string) (*models.AppG
 	return &agi, nil
 }
 
-func (c *AppGroupInfoCache) refreshByAccessKey(accessKey string) (*models.AppGroupInfo, error) {
-	var agi models.AppGroupInfo
-	if err := c.db.Where("access_key = ?", accessKey).First(&agi).Error; err != nil {
-		return nil, err
-	}
-	if err := c.setCache(agi); err != nil {
-		return nil, err
-	}
-	return &agi, nil
-}
-
 func (c *AppGroupInfoCache) cacheKeyByID(id uint64) string {
 	return fmt.Sprintf("%s:id:%d", appGroupInfoCacheKeyPrefix, id)
 }
 
 func (c *AppGroupInfoCache) cacheKeyByAppGroupID(appGroupID string) string {
 	return fmt.Sprintf("%s:group_id:%s", appGroupInfoCacheKeyPrefix, appGroupID)
-}
-
-func (c *AppGroupInfoCache) cacheKeyByAccessKey(accessKey string) string {
-	return fmt.Sprintf("%s:access_key:%s", appGroupInfoCacheKeyPrefix, accessKey)
 }

@@ -36,13 +36,6 @@ func (c *AppInfoCache) GetByAppID(appID string) (*models.AppInfo, error) {
 	})
 }
 
-// GetByAccessKeyID 按 access_key 获取商户应用信息
-func (c *AppInfoCache) GetByAccessKeyID(accessKeyID string) (*models.AppInfo, error) {
-	return c.get(c.cacheKeyByAccessKeyID(accessKeyID), func() (*models.AppInfo, error) {
-		return c.refreshByAccessKeyID(accessKeyID)
-	})
-}
-
 // RefreshByID 刷新单个 AppInfo 缓存（按表主键 id）
 func (c *AppInfoCache) RefreshByID(id uint64) (*models.AppInfo, error) {
 	return c.refreshByID(id)
@@ -51,11 +44,6 @@ func (c *AppInfoCache) RefreshByID(id uint64) (*models.AppInfo, error) {
 // RefreshByAppID 刷新单个 AppInfo 缓存（按 app_id）
 func (c *AppInfoCache) RefreshByAppID(appID string) (*models.AppInfo, error) {
 	return c.refreshByAppID(appID)
-}
-
-// RefreshByAccessKeyID 刷新单个 AppInfo 缓存（按 access_key）
-func (c *AppInfoCache) RefreshByAccessKeyID(accessKeyID string) (*models.AppInfo, error) {
-	return c.refreshByAccessKeyID(accessKeyID)
 }
 
 func (c *AppInfoCache) setCache(app models.AppInfo) error {
@@ -67,9 +55,6 @@ func (c *AppInfoCache) setCache(app models.AppInfo) error {
 	keys := []string{
 		c.cacheKeyByID(app.Id),
 		c.cacheKeyByAppID(app.AppId),
-	}
-	if app.AccessKeyId != "" {
-		keys = append(keys, c.cacheKeyByAccessKeyID(app.AccessKeyId))
 	}
 	for _, key := range keys {
 		if err := c.rdb.Set(ctx, key, data, 0).Err(); err != nil {
@@ -116,25 +101,10 @@ func (c *AppInfoCache) refreshByAppID(appID string) (*models.AppInfo, error) {
 	return &app, nil
 }
 
-func (c *AppInfoCache) refreshByAccessKeyID(accessKeyID string) (*models.AppInfo, error) {
-	var app models.AppInfo
-	if err := c.db.Where("access_key = ?", accessKeyID).First(&app).Error; err != nil {
-		return nil, err
-	}
-	if err := c.setCache(app); err != nil {
-		return nil, err
-	}
-	return &app, nil
-}
-
 func (c *AppInfoCache) cacheKeyByID(id uint64) string {
 	return fmt.Sprintf("%s:id:%d", appCacheKeyPrefix, id)
 }
 
 func (c *AppInfoCache) cacheKeyByAppID(appID string) string {
 	return fmt.Sprintf("%s:app_id:%s", appCacheKeyPrefix, appID)
-}
-
-func (c *AppInfoCache) cacheKeyByAccessKeyID(accessKeyID string) string {
-	return fmt.Sprintf("%s:access_key:%s", appCacheKeyPrefix, accessKeyID)
 }

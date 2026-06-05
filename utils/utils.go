@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
@@ -23,19 +24,8 @@ type AppIdCache struct {
 	mu    sync.RWMutex
 }
 
-// AccessKeyIDCache 用于缓存通过 AccessKeyID 查询的 AppInfo
-type AccessKeyIDCache struct {
-	cache map[string]*models.AppInfo
-	mu    sync.RWMutex
-}
-
 // 初始化 AppId 缓存
 var appIdCache = &AppIdCache{
-	cache: make(map[string]*models.AppInfo),
-}
-
-// 初始化 AccessKeyID 缓存
-var accessKeyIDCache = &AccessKeyIDCache{
 	cache: make(map[string]*models.AppInfo),
 }
 
@@ -61,39 +51,6 @@ func GetAppInfoByAppId(db *gorm.DB, appId string) (*models.AppInfo, error) {
 	appIdCache.cache[appId] = &dbAppInfo
 	appIdCache.mu.Unlock()
 
-	accessKeyIDCache.mu.RLock()
-	accessKeyIDCache.cache[dbAppInfo.AccessKeyId] = &dbAppInfo
-	accessKeyIDCache.mu.RUnlock()
-
-	return &dbAppInfo, nil
-}
-
-// GetAppInfoByAcessKeyID 通过 AccessKeyID 获取 AppInfo，使用 AccessKeyID 缓存
-func GetAppInfoByAcessKeyID(db *gorm.DB, accessKeyID string) (*models.AppInfo, error) {
-	// 先尝试从 AccessKeyID 缓存读取
-	accessKeyIDCache.mu.RLock()
-	appInfo, exists := accessKeyIDCache.cache[accessKeyID]
-	accessKeyIDCache.mu.RUnlock()
-	if exists {
-		return appInfo, nil
-	}
-
-	// 缓存中不存在，从数据库查询
-	var dbAppInfo models.AppInfo
-	result := db.Where("access_key = ?", accessKeyID).First(&dbAppInfo)
-	if result.Error != nil {
-		return nil, result.Error
-	}
-
-	// 将查询结果写入 AccessKeyID 缓存
-	accessKeyIDCache.mu.Lock()
-	accessKeyIDCache.cache[accessKeyID] = &dbAppInfo
-	accessKeyIDCache.mu.Unlock()
-
-	appIdCache.mu.Lock()
-	appIdCache.cache[dbAppInfo.AppId] = &dbAppInfo
-	appIdCache.mu.Unlock()
-
 	return &dbAppInfo, nil
 }
 
@@ -102,13 +59,6 @@ func (c *AppIdCache) DeleteByAppId(appId string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	delete(c.cache, appId)
-}
-
-// DeleteByAccessKeyID 按 AccessKeyID 指定清除 AccessKeyIDCache 中的缓存
-func (c *AccessKeyIDCache) DeleteByAccessKeyID(accessKeyID string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	delete(c.cache, accessKeyID)
 }
 
 // ===========================================================================
@@ -124,22 +74,20 @@ func generateNonce(length int) string {
 
 }
 
-// generateSignature 计算签名
-func generateSignature(accessKeySecret, nonce string, timestamp int64) string {
-	dataToSign := accessKeySecret + nonce + strconv.FormatInt(timestamp, 10)
-	hash := sha256.Sum256([]byte(dataToSign))
-	return hex.EncodeToString(hash[:])
+// generateSign: HMAC-SHA256(appId + nonce + timestamp + body, accessSecret)
+func generateSign(appId, accessSecret, nonce string, timestamp int64, body string) string {
+	parameter := appId + nonce + strconv.FormatInt(timestamp, 10) + body
+	mac := hmac.New(sha256.New, []byte(accessSecret))
+	mac.Write([]byte(parameter))
+	return hex.EncodeToString(mac.Sum(nil))
 }
 
-func SendRequest(accessKeyID, accessKeySecret, apiURL string, data []byte) ([]byte, error) {
-	// 生成随机字符串和时间戳
-	nonce := generateNonce(128)
+func SendRequest(appId, accessSecret, apiURL string, data []byte) ([]byte, error) {
+	nonce := generateNonce(8)
 	timestamp := time.Now().Unix()
+	timestampStr := strconv.FormatInt(timestamp, 10)
+	signature := generateSign(appId, accessSecret, nonce, timestamp, string(data))
 
-	// 计算签名
-	signature := generateSignature(accessKeySecret, nonce, timestamp)
-
-	// 设置请求头
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", apiURL, bytes.NewReader(data))
 	if err != nil {
@@ -147,19 +95,18 @@ func SendRequest(accessKeyID, accessKeySecret, apiURL string, data []byte) ([]by
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("AccessKeyId", accessKeyID)
-	req.Header.Set("Nonce", nonce)
-	req.Header.Set("Timestamp", strconv.FormatInt(timestamp, 10))
-	req.Header.Set("Sign", signature)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("x-appid", appId)
+	req.Header.Set("x-sign", signature)
+	req.Header.Set("x-nonce", nonce)
+	req.Header.Set("x-timestamp", timestampStr)
 
-	// 发送 POST 请求
 	resp, err := client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("Error sending request: %w", err)
 	}
 	defer resp.Body.Close()
 
-	// 读取响应内容
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("Error reading response body: %w", err)

@@ -16,9 +16,8 @@ type AppGroupInfo struct {
 	Id uint64 `gorm:"column:id;type:bigint unsigned;primaryKey;autoIncrement" json:"id"`
 
 	GroupId         string  `gorm:"column:group_id;type:varchar(64);not null;uniqueIndex:idx_app_group_info_group_id;comment:总商户编号" json:"groupId"`
-	Name            string  `gorm:"column:name;type:varchar(128);not null;comment:总商户名称" json:"name"`
-	AccessKey       string  `gorm:"column:access_key;type:varchar(128);comment:总商户Key" json:"accessKey"`
-	AccessSecret    string  `gorm:"column:access_secret;type:varchar(255);comment:总商户密钥" json:"accessSecret"`
+	Name         string `gorm:"column:name;type:varchar(128);not null;comment:总商户名称" json:"name"`
+	AccessSecret string `gorm:"column:access_secret;type:varchar(255);comment:总商户密钥" json:"accessSecret"`
 	CallBackUrl     string  `gorm:"column:call_back_url;type:longtext;comment:回调地址" json:"callBackUrl"`
 	Currency        string  `gorm:"column:currency;type:varchar(64);comment:货币类型" json:"currency"`
 	Rtp             string  `gorm:"column:rtp;type:varchar(32);comment:默认RTP" json:"rtp"`

@@ -13,8 +13,7 @@ type AppInfo struct {
 	Name        string `gorm:"column:name;type:longtext;comment:商户名称" json:"name"`
 	AppId       string `gorm:"column:app_id;type:varchar(32);uniqueIndex:idx_app_info_app_id;comment:应用ID" json:"appId"`
 	CallBackUrl string `gorm:"column:call_back_url;type:longtext;comment:api回调接口,需要商户提供" json:"callBackUrl"`
-	Currency    string `gorm:"column:currency;type:longtext;comment:货币类型" json:"currency"`
-	AccessKeyId string `gorm:"column:access_key;type:varchar(191);index:idx_app_info_access_key_id;comment:访问密钥Id" json:"accessKey"`
+	Currency        string `gorm:"column:currency;type:longtext;comment:货币类型" json:"currency"`
 	AccessKeySecret string `gorm:"column:access_secret;type:longtext;comment:访问密钥" json:"accessKeySecret"`
 	Country     string `gorm:"column:country;type:longtext;comment:国家如中国cn,美国us" json:"country"`
 	TimeZone    string `gorm:"column:time_zone;type:varchar(191);default:Asia/Kolkata;comment:时区" json:"timeZone"`
