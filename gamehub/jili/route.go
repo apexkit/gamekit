@@ -84,7 +84,7 @@ func (s *JiliRouter) onWebSocketHandler(token, retryCount string, c *websocket.C
 
 	s.log.Infof("onWebSocketHandler token: %s, retryCount: %d", token, retryCountNum)
 
-	tokenInfo, err := player.DecodedSSOKeyV3(token)
+	tokenInfo, err := player.DecodedSSOKeyV3(s.rdb, token)
 	if err != nil {
 		s.log.Errorf("DecodedSSOKeyV3 failed: %v", err)
 		return err

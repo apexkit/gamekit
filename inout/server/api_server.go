@@ -102,7 +102,7 @@ func (s *InoutGameApiServer) OnWebSocketHandler(c *websocket.Conn, operatorId st
 		}
 	}()
 
-	tokenInfo, err := player.DecodedSSOKeyV3(token)
+	tokenInfo, err := player.DecodedSSOKeyV3(s.rdb, token)
 	if err != nil {
 		s.log.Errorf("DecodedSSOKeyV3 failed: %v", err)
 		return err

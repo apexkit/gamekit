@@ -51,7 +51,7 @@ func GetGameRtp(db *gorm.DB, appId string, brand string, gameID string) (*models
 }
 
 // 返回一下token
-func InitPlayer(rdb *redis.Client, db *gorm.DB, appId string, playerId string, ssoKey string, brand string, gameId string) error {
+func InitPlayer(rdb *redis.Client, db *gorm.DB, appId string, playerId string, ssoKey string, brand string, gameId string, currency string) error {
 	if appId == "" || playerId == "" {
 		return errors.New("appId or playerId is empty")
 	}
@@ -117,36 +117,42 @@ func InitPlayer(rdb *redis.Client, db *gorm.DB, appId string, playerId string, s
 	}
 
 	ctx := context.Background()
-	token := generate32CharString()
+	playerInfoKey := fmt.Sprintf(RedisKeyPlayerInfo, appId, playerId)
 
-	err = rdb.HSet(ctx, fmt.Sprintf(RedisKeyPlayerInfo, appId, playerId), []string{
+	oldSsoKey, err := rdb.HGet(ctx, playerInfoKey, "ssoKey").Result()
+	if err != nil && !errors.Is(err, redis.Nil) {
+		return err
+	}
+	if oldSsoKey != "" && ssoKey != "" && oldSsoKey != ssoKey {
+		if err = MarkSSOKeyV3Kicked(rdb, oldSsoKey); err != nil {
+			return err
+		}
+	}
+
+	fields := []string{
 		"rtp", playerInfo.Rtp, // 玩家RTP
 		"appId", appId, // 应用ID
 		"playerId", playerId, // 玩家ID
 		"brand", brand, // 品牌
 		"gameId", gameId, // 游戏ID
-		"currency", appInfo.Currency, // 货币类型
+		"currency", currency, // 货币类型
 		"aId", strconv.FormatUint(playerInfo.AId, 10), // 用户ID
-	}).Err()
+	}
+	if ssoKey != "" {
+		fields = append(fields, "ssoKey", ssoKey)
+	}
 
+	err = rdb.HSet(ctx, playerInfoKey, fields).Err()
 	if err != nil {
 		log.Error("InitPlayer redis set player info error: ", err)
-		return nil
-	}
-	// 数据设置过期
-	rdb.Expire(ctx, fmt.Sprintf(RedisKeyPlayerInfo, appId, playerId), RedisPlayInfoExpire)
-
-	// token与用户信息做映射关系
-	rdb.Set(ctx, fmt.Sprintf(RedisKeyPlayerToken, token), fmt.Sprintf(RedisKeyPlayerInfo, appId, playerId), RedisPlayInfoExpire)
-
-	// 保存 ssoKey 到 token 的索引，10分钟过期
-
-	key := fmt.Sprintf("ssoKey:%v-%v", appId, ssoKey)
-
-	err = rdb.Set(ctx, key, token, RedisPlayInfoExpire).Err()
-	if err != nil {
 		return err
 	}
+
+	if err = rdb.Expire(ctx, playerInfoKey, RedisPlayInfoExpire).Err(); err != nil {
+		return err
+	}
+
+	// V3 鉴权由 EncodedSSOKeyV3 写入 ssoKeyV3:{ssoKey}，游戏服通过 DecodedSSOKeyV3 + GetPlayerByAppAndPlayerId 完成登录
 
 	return nil
 }

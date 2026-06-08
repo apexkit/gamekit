@@ -91,7 +91,7 @@ func (r *InoutRouter) OnWebSocketHandler(c *websocket.Conn, operatorId string, t
 		}
 	}()
 
-	tokenInfo, err := player.DecodedSSOKeyV3(token)
+	tokenInfo, err := player.DecodedSSOKeyV3(r.rdb, token)
 	if err != nil {
 		r.log.Errorf("DecodedSSOKeyV3 failed: %v", err)
 		return err

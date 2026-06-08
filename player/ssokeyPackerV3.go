@@ -1,96 +1,86 @@
 package player
 
 import (
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
+	"context"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	minitoken "github.com/apexkit/gamekit/player/mini_token"
-	"google.golang.org/protobuf/proto"
+	"github.com/redis/go-redis/v9"
 )
-
-// 验证 HMAC 的函数
-func VerifyHMACSHA256(text, key string, expectedHMAC string) bool {
-	result := HMACSHA256Encrypt(text, key)
-	return result == expectedHMAC
-}
-
-// HMACSHA256Encrypt 使用 HMAC-SHA256 加密文本，直接返回前6后6的hex字符
-func HMACSHA256Encrypt(text, key string) string {
-	// 将字符串转换为字节切片
-	textBytes := []byte(text)
-	keyBytes := []byte(key)
-
-	// 创建 HMAC 对象
-	h := hmac.New(sha256.New, keyBytes)
-
-	// 写入数据
-	h.Write(textBytes)
-
-	// 计算 HMAC
-	hmacResult := h.Sum(nil)
-
-	// 转换为hex格式
-	hexResult := hex.EncodeToString(hmacResult)
-
-	// 直接返回前6和后6字符
-	return hexResult[:6] + hexResult[len(hexResult)-6:]
-}
 
 const (
-	SSOKeyV3SignKey = "RandomStringWithSpecialChars"
+	RedisKeySSOKeyV3Payload = "ssoKeyV3:%s"
+	SSOKeyV3Expire          = 24 * time.Hour
+
+	SSOKeyV3FieldKicked = "kicked"
+	SSOKeyV3KickedNo     = "0"
+	SSOKeyV3KickedYes    = "1"
 )
 
-func generateTokenToString(params *minitoken.TokenPayload) string {
-	var builder strings.Builder
+var ErrSSOKeyKicked = errors.New("kicked")
 
-	// 按 protobuf 字段编号顺序
-	builder.WriteString(params.AppId)
-	builder.WriteString(params.PlayerId)
-	builder.WriteString(params.GameBrand)
-	builder.WriteString(params.GameId)
-	builder.WriteString(fmt.Sprintf("%d", params.Expire))
+func EncodedSSOKeyV3(rdb *redis.Client, params *minitoken.TokenPayload) (string, error) {
+	ssoKey := generate32CharString()
 
-	return builder.String()
-}
-
-func EncodedSSOKeyV3(params *minitoken.TokenPayload) (string, error) {
-	params.Expire = time.Now().Add(24 * time.Hour).Unix()
-	params.Sign = HMACSHA256Encrypt(generateTokenToString(params), SSOKeyV3SignKey)
-	protoBytes, err := proto.Marshal(params)
+	ctx := context.Background()
+	key := fmt.Sprintf(RedisKeySSOKeyV3Payload, ssoKey)
+	err := rdb.HSet(ctx, key, []string{
+		"appId", params.AppId,
+		"playerId", params.PlayerId,
+		"gameBrand", params.GameBrand,
+		"gameId", params.GameId,
+		SSOKeyV3FieldKicked, SSOKeyV3KickedNo,
+	}).Err()
 	if err != nil {
 		return "", err
 	}
-	hexStr := hex.EncodeToString(protoBytes)
-	return hexStr, nil
+	if err = rdb.Expire(ctx, key, SSOKeyV3Expire).Err(); err != nil {
+		return "", err
+	}
+
+	return ssoKey, nil
 }
 
-func DecodedSSOKeyV3(encodedSSOKey string) (*minitoken.TokenPayload, error) {
-	protoBytes, err := hex.DecodeString(encodedSSOKey)
+func DecodedSSOKeyV3(rdb *redis.Client, encodedSSOKey string) (*minitoken.TokenPayload, error) {
+	ctx := context.Background()
+	key := fmt.Sprintf(RedisKeySSOKeyV3Payload, encodedSSOKey)
+
+	values, err := rdb.HGetAll(ctx, key).Result()
 	if err != nil {
 		return nil, err
 	}
-	minitoken := &minitoken.TokenPayload{}
-	err = proto.Unmarshal(protoBytes, minitoken)
+	if len(values) == 0 {
+		return nil, errors.New("ssokey not found")
+	}
+	if values[SSOKeyV3FieldKicked] == SSOKeyV3KickedYes {
+		return nil, ErrSSOKeyKicked
+	}
+	return &minitoken.TokenPayload{
+		AppId:     values["appId"],
+		PlayerId:  values["playerId"],
+		GameBrand: values["gameBrand"],
+		GameId:    values["gameId"],
+	}, nil
+}
+
+// MarkSSOKeyV3Kicked 将旧 ssoKey 标记为已被顶号
+func MarkSSOKeyV3Kicked(rdb *redis.Client, ssoKey string) error {
+	if ssoKey == "" {
+		return nil
+	}
+
+	ctx := context.Background()
+	key := fmt.Sprintf(RedisKeySSOKeyV3Payload, ssoKey)
+	exists, err := rdb.Exists(ctx, key).Result()
 	if err != nil {
-		return nil, err
+		return err
 	}
-
-	// 验证签名
-	if !VerifyHMACSHA256(generateTokenToString(minitoken), SSOKeyV3SignKey, minitoken.Sign) {
-		return nil, errors.New("invalid sign")
+	if exists == 0 {
+		return nil
 	}
-
-	// 验证过期时间
-	if minitoken.Expire < time.Now().Unix() {
-		return nil, errors.New("expired")
-	}
-
-	return minitoken, nil
+	return rdb.HSet(ctx, key, SSOKeyV3FieldKicked, SSOKeyV3KickedYes).Err()
 }
 
 // 判断一个游戏有没有多地登陆

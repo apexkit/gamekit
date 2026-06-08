@@ -102,7 +102,7 @@ func (s *JiliFishApiServer) OnWebSocketHandler(token, retryCount string, c *webs
 		retryCountNum = 0
 	}
 
-	tokenInfo, err := player.DecodedSSOKeyV3(token)
+	tokenInfo, err := player.DecodedSSOKeyV3(s.rdb, token)
 	if err != nil {
 		s.log.Errorf("DecodedSSOKeyV3 failed: %v", err)
 		return

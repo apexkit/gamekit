@@ -242,7 +242,7 @@ func (r *JDBRouter) onLogin(c *websocket.Conn, buff []byte) (types.PlayerImp, er
 	// appid := req.Payload.Jurisdiction
 	ssokey := req.SessionID3
 
-	params, err := player.DecodedSSOKeyV3(ssokey)
+	params, err := player.DecodedSSOKeyV3(r.rdb, ssokey)
 	if err != nil {
 		r.log.Errorf("DecodeSSOKeyParams(%v) failed. err: %v", ssokey, err)
 		return nil, err
