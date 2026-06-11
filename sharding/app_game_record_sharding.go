@@ -2,6 +2,7 @@ package sharding
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -30,6 +31,8 @@ type AppGameRecordRouter struct {
 	Rules       map[string]*AppGameRecordShardRule
 	mu          sync.RWMutex
 }
+
+var appGameRecordShardKeyPattern = regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
 
 // NewRouter 初始化
 func NewAppGameRecordRouter() *AppGameRecordRouter {
@@ -73,9 +76,35 @@ func (r *AppGameRecordRouter) UpdateRule(appID string, mode ShardMode, shardingS
 	}
 }
 
+// ExtractAppGroupIDFromAppID returns the record shard key from appID.
+// The shard key is the segment before the first underscore, or the full appID
+// when no underscore is present.
+func ExtractAppGroupIDFromAppID(appID string) (string, error) {
+	segment := appID
+	if idx := strings.Index(appID, "_"); idx >= 0 {
+		segment = appID[:idx]
+	}
+	if segment == "" {
+		return "", fmt.Errorf("app_id %q: missing app_group_id segment", appID)
+	}
+	if !appGameRecordShardKeyPattern.MatchString(segment) {
+		return "", fmt.Errorf("app_id %q: invalid app_group_id segment %q", appID, segment)
+	}
+	return segment, nil
+}
+
+func mustExtractAppGroupIDFromAppID(appID string) string {
+	groupID, err := ExtractAppGroupIDFromAppID(appID)
+	if err != nil {
+		panic(err)
+	}
+	return groupID
+}
+
 // GetMainTable 获取写入表名（永远写主表）
 func (r *AppGameRecordRouter) GetMainTable(appID string) string {
-	return fmt.Sprintf("%s_%s", r.TablePrefix, appID)
+	groupID := mustExtractAppGroupIDFromAppID(appID)
+	return fmt.Sprintf("%s_%s", r.TablePrefix, groupID)
 }
 
 // GetQueryTables 获取查询表列表
@@ -96,6 +125,7 @@ func (r *AppGameRecordRouter) GetQueryTables(appID string, start, end time.Time)
 func (r *AppGameRecordRouter) getTablesWithHistory(appID string, rule *AppGameRecordShardRule, start, end time.Time) []string {
 	var tables []string
 	now := time.Now()
+	groupID := mustExtractAppGroupIDFromAppID(appID)
 
 	// 当前表（主表）只在 includeMain 为 true 且 end 日期在最近 30 天内时包含
 	if end.After(now.AddDate(0, 0, -30)) {
@@ -113,7 +143,7 @@ func (r *AppGameRecordRouter) getTablesWithHistory(appID string, rule *AppGameRe
 	for d := startMonth; !d.After(endMonth); d = d.AddDate(0, 1, 0) {
 		// 历史表只覆盖主表前的数据（30天前）
 		if d.Before(now.AddDate(0, 0, -30)) {
-			historyTable := fmt.Sprintf("%s_%s_%s", r.TablePrefix, appID, d.Format("200601"))
+			historyTable := fmt.Sprintf("%s_%s_%s", r.TablePrefix, groupID, d.Format("200601"))
 			tables = append(tables, historyTable)
 		}
 	}

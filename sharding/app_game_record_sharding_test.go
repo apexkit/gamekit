@@ -1,42 +1,72 @@
 package sharding
 
 import (
-	"fmt"
 	"testing"
 	"time"
 )
 
-func TestAppGameRecordRouter(t *testing.T) {
+func TestExtractAppGroupIDFromAppID(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		appID   string
+		want    string
+		wantErr bool
+	}{
+		{name: "prefix before underscore", appID: "1001_demo", want: "1001"},
+		{name: "hyphen group id", appID: "zm-test_demo", want: "zm-test"},
+		{name: "no underscore", appID: "1001", want: "1001"},
+		{name: "empty prefix", appID: "_demo", wantErr: true},
+		{name: "invalid characters", appID: "zm.test_demo", wantErr: true},
+	}
+
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			got, err := ExtractAppGroupIDFromAppID(tt.appID)
+			if tt.wantErr {
+				if err == nil {
+					t.Fatalf("expected error, got nil")
+				}
+				return
+			}
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if got != tt.want {
+				t.Fatalf("expected %q, got %q", tt.want, got)
+			}
+		})
+	}
+}
+
+func TestAppGameRecordRouter_UsesGroupIDTables(t *testing.T) {
+	t.Parallel()
+
 	router := NewAppGameRecordRouter()
+	shardStart := time.Date(2025, 7, 1, 0, 0, 0, 0, time.UTC)
+	router.UpdateRule("zm-test_demo", MainAndHistory, &shardStart)
 
-	// 初始化商户规则
-	router.Rules["1001"] = &AppGameRecordShardRule{AppID: "1001", Mode: MainAndHistory} // 大商户
-	router.Rules["2001"] = &AppGameRecordShardRule{AppID: "2001", Mode: OnlyMain}       // 小商户
+	mainTable := router.GetMainTable("zm-test_demo")
+	if mainTable != "app_game_record_zm-test" {
+		t.Fatalf("expected main table app_game_record_zm-test, got %s", mainTable)
+	}
 
-	fmt.Println("Main Table:", router.GetMainTable("1001"))
-
-	start, _ := time.Parse("2006-01-02", "2025-06-01")
-	end, _ := time.Parse("2006-01-02", "2025-09-30")
-
-	tables := router.GetQueryTables("1002", start, end)
-	fmt.Println("查询历史数据，只会查当前表 Tables:", tables)
-
-	shardStart, _ := time.Parse("2006-01-02", "2025-07-01")
-	router.UpdateRule("1002", MainAndHistory, &shardStart)
-	tables = router.GetQueryTables("1002", start, end)
-	fmt.Println("更改模式后，查询历史数据，查表 Tables:", tables)
-
-	tables = router.GetQueryTables("1001", start, end)
-	fmt.Println("查询历史数据，不包含当前表 Tables:", tables)
-
-	end, _ = time.Parse("2006-01-02", "2025-09-30")
-	tables = router.GetQueryTables("1001", start, end)
-	fmt.Println("查询历史数据，包含当前表 Tables:", tables)
-
-	sql := BuildAppGameRecordUnionSQL(tables, "id, user_id, score", "user_id=123")
-	fmt.Println("Generated SQL:")
-	fmt.Println(sql)
-	/*
-	   SELECT id, user_id, score FROM app_game_record_1001_202506 WHERE user_id=123
-	*/
+	start := time.Date(2025, 6, 1, 0, 0, 0, 0, time.UTC)
+	end := time.Now().AddDate(0, 0, -45)
+	tables := router.GetQueryTables("zm-test_demo", start, end)
+	if len(tables) == 0 {
+		t.Fatalf("expected history tables, got none")
+	}
+	for _, table := range tables {
+		if len(table) >= len("app_game_record_") && table[:len("app_game_record_")] != "app_game_record_" {
+			t.Fatalf("unexpected table prefix: %s", table)
+		}
+		if table == "app_game_record_zm-test_demo" {
+			t.Fatalf("expected group-id shard table, got app-id table %s", table)
+		}
+	}
 }
