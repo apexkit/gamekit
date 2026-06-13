@@ -30,10 +30,17 @@ func (c *AppInfoCache) GetByID(id uint64) (*models.AppInfo, error) {
 	})
 }
 
-// GetByAppID 按 app_id 获取商户应用信息
+// GetByAppID 按 app_id 获取商户应用信息（仅查询，不存在时不创建）。
 func (c *AppInfoCache) GetByAppID(appID string) (*models.AppInfo, error) {
 	return c.get(c.cacheKeyByAppID(appID), func() (*models.AppInfo, error) {
-		return c.refreshByAppID(appID)
+		return c.refreshByAppIDExisting(appID)
+	})
+}
+
+// GetOrCreateByAppID 按 app_id 获取商户应用信息；AppInfo 不存在且对应 group 已存在时自动创建 AppInfo（不创建 group）。
+func (c *AppInfoCache) GetOrCreateByAppID(appID string) (*models.AppInfo, error) {
+	return c.get(c.cacheKeyByAppID(appID), func() (*models.AppInfo, error) {
+		return c.refreshByAppIDOrCreate(appID)
 	})
 }
 
@@ -42,9 +49,9 @@ func (c *AppInfoCache) RefreshByID(id uint64) (*models.AppInfo, error) {
 	return c.refreshByID(id)
 }
 
-// RefreshByAppID 刷新单个 AppInfo 缓存（按 app_id）
+// RefreshByAppID 刷新单个 AppInfo 缓存（按 app_id，仅查询）
 func (c *AppInfoCache) RefreshByAppID(appID string) (*models.AppInfo, error) {
-	return c.refreshByAppID(appID)
+	return c.refreshByAppIDExisting(appID)
 }
 
 func (c *AppInfoCache) setCache(app models.AppInfo) error {
@@ -91,18 +98,28 @@ func (c *AppInfoCache) refreshByID(id uint64) (*models.AppInfo, error) {
 	return &app, nil
 }
 
-func (c *AppInfoCache) refreshByAppID(appID string) (*models.AppInfo, error) {
+func (c *AppInfoCache) refreshByAppIDExisting(appID string) (*models.AppInfo, error) {
+	var appInfo models.AppInfo
+	if err := c.db.Where("app_id = ?", appID).First(&appInfo).Error; err != nil {
+		return nil, err
+	}
+	if err := c.setCache(appInfo); err != nil {
+		return nil, err
+	}
+	return &appInfo, nil
+}
+
+func (c *AppInfoCache) refreshByAppIDOrCreate(appID string) (*models.AppInfo, error) {
 	var appInfo models.AppInfo
 	err := c.db.Where("app_id = ?", appID).First(&appInfo).Error
-	// 如果记录不存在，则创建记录
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		appGroup, err := c.resolveAppGroup(appID)
 		if err != nil {
-			return nil, err
+			return nil, err // group 不存在时不创建 AppInfo
 		}
 		appInfo = models.AppInfo{
 			AppId:      appID,
-			Name:       "",
+			Name:       appID,
 			AppGroupId: &appGroup.Id,
 			Rtp:        appGroup.Rtp,
 		}
