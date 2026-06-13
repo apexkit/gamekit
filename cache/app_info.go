@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/apexkit/gamekit/app"
 	"github.com/apexkit/gamekit/models"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/gorm"
@@ -91,14 +92,44 @@ func (c *AppInfoCache) refreshByID(id uint64) (*models.AppInfo, error) {
 }
 
 func (c *AppInfoCache) refreshByAppID(appID string) (*models.AppInfo, error) {
-	var app models.AppInfo
-	if err := c.db.Where("app_id = ?", appID).First(&app).Error; err != nil {
+	var appInfo models.AppInfo
+	err := c.db.Where("app_id = ?", appID).First(&appInfo).Error
+	// 如果记录不存在，则创建记录
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		appGroup, err := c.resolveAppGroup(appID)
+		if err != nil {
+			return nil, err
+		}
+		appInfo = models.AppInfo{
+			AppId:      appID,
+			Name:       "",
+			AppGroupId: &appGroup.Id,
+			Rtp:        appGroup.Rtp,
+		}
+		if err = c.db.Create(&appInfo).Error; err != nil {
+			if err := c.db.Where("app_id = ?", appID).First(&appInfo).Error; err != nil {
+				return nil, err
+			}
+		}
+	} else if err != nil {
 		return nil, err
 	}
-	if err := c.setCache(app); err != nil {
+	if err := c.setCache(appInfo); err != nil {
 		return nil, err
 	}
-	return &app, nil
+	return &appInfo, nil
+}
+
+func (c *AppInfoCache) resolveAppGroup(appID string) (*models.AppGroupInfo, error) {
+	groupID, err := app.AppGroupIDFromAppID(appID)
+	if err != nil {
+		return nil, err
+	}
+	var appGroup models.AppGroupInfo
+	if err := c.db.Where("group_id = ?", groupID).First(&appGroup).Error; err != nil {
+		return nil, err
+	}
+	return &appGroup, nil
 }
 
 func (c *AppInfoCache) cacheKeyByID(id uint64) string {
