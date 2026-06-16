@@ -1,0 +1,15 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## v1.0.12 - 2026-06-16
+
+### Added
+- add `infra/metric` shared helpers for Prometheus pull-mode metrics export
+- add shared OpenTelemetry MeterProvider initialization backed by the Prometheus exporter
+- add shared Kratos request counter and latency histogram helpers
+- add a shared `/metrics` HTTP handler for service integration
+
+### Changed
+- update `infra/utils/grpc` to initialize the shared Prometheus-backed metrics provider before creating gRPC client metrics
+- upgrade Prometheus and OpenTelemetry exporter dependencies required by the shared metrics package

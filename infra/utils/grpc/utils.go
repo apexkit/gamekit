@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	common_metric "github.com/apexkit/gamekit/infra/metric"
 	"github.com/go-kratos/kratos/v2/middleware/tracing"
 	"sync"
 	"time"
@@ -24,6 +25,10 @@ var (
 
 func dialGrpcWithFilter(jobName, name string, ds registry.Discovery, f selector.NodeFilter) (*google_grpc.ClientConn, error) {
 	const timeout = 10 * time.Second
+
+	if err := common_metric.SetupPrometheusMeterProvider(); err != nil {
+		return nil, err
+	}
 
 	// 只设置一次全局selector，避免重复设置和并发问题
 	selectorOnce.Do(func() {
