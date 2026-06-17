@@ -49,6 +49,16 @@ func (c *AppGroupInfoCache) RefreshByAppGroupID(appGroupID string) (*models.AppG
 	return c.refreshByAppGroupID(appGroupID)
 }
 
+// EvictByGroupID removes cached app group entries for group_id (and id when provided).
+func (c *AppGroupInfoCache) EvictByGroupID(groupID string, id uint64) error {
+	ctx := context.Background()
+	keys := []string{c.cacheKeyByAppGroupID(groupID)}
+	if id > 0 {
+		keys = append(keys, c.cacheKeyByID(id))
+	}
+	return c.rdb.Del(ctx, keys...).Err()
+}
+
 func (c *AppGroupInfoCache) setCache(agi models.AppGroupInfo) error {
 	data, err := json.Marshal(agi)
 	if err != nil {
