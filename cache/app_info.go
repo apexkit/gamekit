@@ -117,17 +117,11 @@ func (c *AppInfoCache) refreshByAppIDOrCreate(appID string) (*models.AppInfo, er
 		if err != nil {
 			return nil, err // group 不存在时不创建 AppInfo
 		}
-		appInfo = models.AppInfo{
-			AppId:      appID,
-			Name:       appID,
-			AppGroupId: &appGroup.Id,
-			Rtp:        appGroup.Rtp,
-		}
 		if err = c.db.Model(&models.AppInfo{}).Create(map[string]any{
 			"app_id":       appID,
 			"name":         appID,
 			"app_group_id": appGroup.Id,
-			"rtp":          appGroup.Rtp,
+			"rtp":          "",
 		}).Error; err != nil {
 			if err := c.db.Where("app_id = ?", appID).First(&appInfo).Error; err != nil {
 				return nil, err
