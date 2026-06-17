@@ -123,7 +123,7 @@ func (c *AppInfoCache) refreshByAppIDOrCreate(appID string) (*models.AppInfo, er
 			AppGroupId: &appGroup.Id,
 			Rtp:        appGroup.Rtp,
 		}
-		if err = c.db.Create(&appInfo).Error; err != nil {
+		if err = c.db.Select("AppId", "Name", "AppGroupId", "Rtp").Create(&appInfo).Error; err != nil {
 			if err := c.db.Where("app_id = ?", appID).First(&appInfo).Error; err != nil {
 				return nil, err
 			}

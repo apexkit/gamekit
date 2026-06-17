@@ -18,7 +18,7 @@ type AppInfo struct {
 	// AccessKeySecret string `gorm:"column:access_secret;type:longtext;comment:访问密钥" json:"accessKeySecret"`
 	// Country         string `gorm:"column:country;type:longtext;comment:国家如中国cn,美国us" json:"country"`
 	// TimeZone        string `gorm:"column:time_zone;type:varchar(191);default:Asia/Kolkata;comment:时区" json:"timeZone"`
-	Rtp string `gorm:"column:rtp;type:varchar(191);default:95;comment:默认rtp" json:"rtp"`
+	Rtp string `gorm:"column:rtp;type:varchar(191);default:NULL;comment:默认rtp" json:"rtp"`
 
 	State uint8 `gorm:"column:state;type:tinyint unsigned;default:0;comment:状态,0正常,1禁用" json:"state"`
 	//Rate             *float64 `gorm:"column:rate;type:double;comment:费率" json:"rate"`
