@@ -102,7 +102,7 @@ type LobbyImp interface {
 	// 玩家收到了消息了
 	OnMessage(player PlayerImp, data interface{}) error
 	// 玩家登录游戏
-	OnLogin(player PlayerImp) error
+	OnLogin(player PlayerImp, data interface{}) error
 }
 
 // 大厅创建器
