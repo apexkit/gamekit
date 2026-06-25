@@ -23,6 +23,7 @@ const (
 	HistoryApi_GameHistoryDetail_FullMethodName         = "/ghistory.v1.HistoryApi/GameHistoryDetail"
 	HistoryApi_GameHistoryByTime_FullMethodName         = "/ghistory.v1.HistoryApi/GameHistoryByTime"
 	HistoryApi_GetTotalBetAndWin_FullMethodName         = "/ghistory.v1.HistoryApi/GetTotalBetAndWin"
+	HistoryApi_GetPlayerGameReport_FullMethodName       = "/ghistory.v1.HistoryApi/GetPlayerGameReport"
 	HistoryApi_CreateGameRecord_FullMethodName          = "/ghistory.v1.HistoryApi/CreateGameRecord"
 	HistoryApi_SetGameRecordStatusBet_FullMethodName    = "/ghistory.v1.HistoryApi/SetGameRecordStatusBet"
 	HistoryApi_SetGameRecordStatusWin_FullMethodName    = "/ghistory.v1.HistoryApi/SetGameRecordStatusWin"
@@ -42,6 +43,8 @@ type HistoryApiClient interface {
 	GameHistoryByTime(ctx context.Context, in *GameHistoryByTimeRequest, opts ...grpc.CallOption) (*GameHistoryByTimeReply, error)
 	// 获取下注的条数据，以及下注的总金额，以及赢钱的总金额
 	GetTotalBetAndWin(ctx context.Context, in *GetTotalBetAndWinRequest, opts ...grpc.CallOption) (*GetTotalBetAndWinReply, error)
+	// 玩家游戏报表：按 gameId + 日期聚合 bet / netWin
+	GetPlayerGameReport(ctx context.Context, in *GetPlayerGameReportRequest, opts ...grpc.CallOption) (*GetPlayerGameReportReply, error)
 	// 创建一条记录(初使状态)
 	CreateGameRecord(ctx context.Context, in *CreateGameRecordRequest, opts ...grpc.CallOption) (*CreateGameRecordReply, error)
 	// 更新历史记录为已下注状态
@@ -96,6 +99,16 @@ func (c *historyApiClient) GetTotalBetAndWin(ctx context.Context, in *GetTotalBe
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(GetTotalBetAndWinReply)
 	err := c.cc.Invoke(ctx, HistoryApi_GetTotalBetAndWin_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *historyApiClient) GetPlayerGameReport(ctx context.Context, in *GetPlayerGameReportRequest, opts ...grpc.CallOption) (*GetPlayerGameReportReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPlayerGameReportReply)
+	err := c.cc.Invoke(ctx, HistoryApi_GetPlayerGameReport_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -164,6 +177,8 @@ type HistoryApiServer interface {
 	GameHistoryByTime(context.Context, *GameHistoryByTimeRequest) (*GameHistoryByTimeReply, error)
 	// 获取下注的条数据，以及下注的总金额，以及赢钱的总金额
 	GetTotalBetAndWin(context.Context, *GetTotalBetAndWinRequest) (*GetTotalBetAndWinReply, error)
+	// 玩家游戏报表：按 gameId + 日期聚合 bet / netWin
+	GetPlayerGameReport(context.Context, *GetPlayerGameReportRequest) (*GetPlayerGameReportReply, error)
 	// 创建一条记录(初使状态)
 	CreateGameRecord(context.Context, *CreateGameRecordRequest) (*CreateGameRecordReply, error)
 	// 更新历史记录为已下注状态
@@ -195,6 +210,9 @@ func (UnimplementedHistoryApiServer) GameHistoryByTime(context.Context, *GameHis
 }
 func (UnimplementedHistoryApiServer) GetTotalBetAndWin(context.Context, *GetTotalBetAndWinRequest) (*GetTotalBetAndWinReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetTotalBetAndWin not implemented")
+}
+func (UnimplementedHistoryApiServer) GetPlayerGameReport(context.Context, *GetPlayerGameReportRequest) (*GetPlayerGameReportReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPlayerGameReport not implemented")
 }
 func (UnimplementedHistoryApiServer) CreateGameRecord(context.Context, *CreateGameRecordRequest) (*CreateGameRecordReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method CreateGameRecord not implemented")
@@ -300,6 +318,24 @@ func _HistoryApi_GetTotalBetAndWin_Handler(srv interface{}, ctx context.Context,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(HistoryApiServer).GetTotalBetAndWin(ctx, req.(*GetTotalBetAndWinRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _HistoryApi_GetPlayerGameReport_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPlayerGameReportRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HistoryApiServer).GetPlayerGameReport(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: HistoryApi_GetPlayerGameReport_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HistoryApiServer).GetPlayerGameReport(ctx, req.(*GetPlayerGameReportRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -416,6 +452,10 @@ var HistoryApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetTotalBetAndWin",
 			Handler:    _HistoryApi_GetTotalBetAndWin_Handler,
+		},
+		{
+			MethodName: "GetPlayerGameReport",
+			Handler:    _HistoryApi_GetPlayerGameReport_Handler,
 		},
 		{
 			MethodName: "CreateGameRecord",

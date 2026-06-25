@@ -858,6 +858,294 @@ func (x *GetTotalBetAndWinReply) GetRecordCount() int64 {
 	return 0
 }
 
+type GetPlayerGameReportRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	AppId         string                 `protobuf:"bytes,1,opt,name=appId,proto3" json:"appId,omitempty"`
+	GameBrand     string                 `protobuf:"bytes,2,opt,name=gameBrand,proto3" json:"gameBrand,omitempty"`
+	PlayerId      string                 `protobuf:"bytes,3,opt,name=playerId,proto3" json:"playerId,omitempty"`
+	Status        string                 `protobuf:"bytes,4,opt,name=status,proto3" json:"status,omitempty"`        // 记录状态，空为全部
+	Currency      string                 `protobuf:"bytes,5,opt,name=currency,proto3" json:"currency,omitempty"`    // 可选，按货币过滤
+	StartTime     int64                  `protobuf:"varint,6,opt,name=startTime,proto3" json:"startTime,omitempty"` // 开始时间戳（毫秒，可选）
+	EndTime       int64                  `protobuf:"varint,7,opt,name=endTime,proto3" json:"endTime,omitempty"`     // 结束时间戳（毫秒，可选）
+	Timezone      string                 `protobuf:"bytes,8,opt,name=timezone,proto3" json:"timezone,omitempty"`    // 日报聚合时区，默认 Asia/Shanghai
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPlayerGameReportRequest) Reset() {
+	*x = GetPlayerGameReportRequest{}
+	mi := &file_history_v1_history_proto_msgTypes[9]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPlayerGameReportRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPlayerGameReportRequest) ProtoMessage() {}
+
+func (x *GetPlayerGameReportRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_history_v1_history_proto_msgTypes[9]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPlayerGameReportRequest.ProtoReflect.Descriptor instead.
+func (*GetPlayerGameReportRequest) Descriptor() ([]byte, []int) {
+	return file_history_v1_history_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *GetPlayerGameReportRequest) GetAppId() string {
+	if x != nil {
+		return x.AppId
+	}
+	return ""
+}
+
+func (x *GetPlayerGameReportRequest) GetGameBrand() string {
+	if x != nil {
+		return x.GameBrand
+	}
+	return ""
+}
+
+func (x *GetPlayerGameReportRequest) GetPlayerId() string {
+	if x != nil {
+		return x.PlayerId
+	}
+	return ""
+}
+
+func (x *GetPlayerGameReportRequest) GetStatus() string {
+	if x != nil {
+		return x.Status
+	}
+	return ""
+}
+
+func (x *GetPlayerGameReportRequest) GetCurrency() string {
+	if x != nil {
+		return x.Currency
+	}
+	return ""
+}
+
+func (x *GetPlayerGameReportRequest) GetStartTime() int64 {
+	if x != nil {
+		return x.StartTime
+	}
+	return 0
+}
+
+func (x *GetPlayerGameReportRequest) GetEndTime() int64 {
+	if x != nil {
+		return x.EndTime
+	}
+	return 0
+}
+
+func (x *GetPlayerGameReportRequest) GetTimezone() string {
+	if x != nil {
+		return x.Timezone
+	}
+	return ""
+}
+
+type PlayerGameDailyStat struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	StatDate      string                 `protobuf:"bytes,1,opt,name=statDate,proto3" json:"statDate,omitempty"` // 统计日期，格式 yyyy/MM/dd
+	Bet           float64                `protobuf:"fixed64,2,opt,name=bet,proto3" json:"bet,omitempty"`
+	NetWin        float64                `protobuf:"fixed64,3,opt,name=netWin,proto3" json:"netWin,omitempty"` // win - bet
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *PlayerGameDailyStat) Reset() {
+	*x = PlayerGameDailyStat{}
+	mi := &file_history_v1_history_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerGameDailyStat) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerGameDailyStat) ProtoMessage() {}
+
+func (x *PlayerGameDailyStat) ProtoReflect() protoreflect.Message {
+	mi := &file_history_v1_history_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerGameDailyStat.ProtoReflect.Descriptor instead.
+func (*PlayerGameDailyStat) Descriptor() ([]byte, []int) {
+	return file_history_v1_history_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *PlayerGameDailyStat) GetStatDate() string {
+	if x != nil {
+		return x.StatDate
+	}
+	return ""
+}
+
+func (x *PlayerGameDailyStat) GetBet() float64 {
+	if x != nil {
+		return x.Bet
+	}
+	return 0
+}
+
+func (x *PlayerGameDailyStat) GetNetWin() float64 {
+	if x != nil {
+		return x.NetWin
+	}
+	return 0
+}
+
+type PlayerGameReportItem struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	GameId         string                 `protobuf:"bytes,1,opt,name=gameId,proto3" json:"gameId,omitempty"`
+	GameType       string                 `protobuf:"bytes,2,opt,name=gameType,proto3" json:"gameType,omitempty"`
+	TotalBet       float64                `protobuf:"fixed64,3,opt,name=totalBet,proto3" json:"totalBet,omitempty"`
+	TotalNetWin    float64                `protobuf:"fixed64,4,opt,name=totalNetWin,proto3" json:"totalNetWin,omitempty"`
+	LastReportDate string                 `protobuf:"bytes,5,opt,name=lastReportDate,proto3" json:"lastReportDate,omitempty"`
+	DailyStats     []*PlayerGameDailyStat `protobuf:"bytes,6,rep,name=dailyStats,proto3" json:"dailyStats,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *PlayerGameReportItem) Reset() {
+	*x = PlayerGameReportItem{}
+	mi := &file_history_v1_history_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *PlayerGameReportItem) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PlayerGameReportItem) ProtoMessage() {}
+
+func (x *PlayerGameReportItem) ProtoReflect() protoreflect.Message {
+	mi := &file_history_v1_history_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PlayerGameReportItem.ProtoReflect.Descriptor instead.
+func (*PlayerGameReportItem) Descriptor() ([]byte, []int) {
+	return file_history_v1_history_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *PlayerGameReportItem) GetGameId() string {
+	if x != nil {
+		return x.GameId
+	}
+	return ""
+}
+
+func (x *PlayerGameReportItem) GetGameType() string {
+	if x != nil {
+		return x.GameType
+	}
+	return ""
+}
+
+func (x *PlayerGameReportItem) GetTotalBet() float64 {
+	if x != nil {
+		return x.TotalBet
+	}
+	return 0
+}
+
+func (x *PlayerGameReportItem) GetTotalNetWin() float64 {
+	if x != nil {
+		return x.TotalNetWin
+	}
+	return 0
+}
+
+func (x *PlayerGameReportItem) GetLastReportDate() string {
+	if x != nil {
+		return x.LastReportDate
+	}
+	return ""
+}
+
+func (x *PlayerGameReportItem) GetDailyStats() []*PlayerGameDailyStat {
+	if x != nil {
+		return x.DailyStats
+	}
+	return nil
+}
+
+type GetPlayerGameReportReply struct {
+	state         protoimpl.MessageState  `protogen:"open.v1"`
+	Items         []*PlayerGameReportItem `protobuf:"bytes,1,rep,name=items,proto3" json:"items,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *GetPlayerGameReportReply) Reset() {
+	*x = GetPlayerGameReportReply{}
+	mi := &file_history_v1_history_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *GetPlayerGameReportReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetPlayerGameReportReply) ProtoMessage() {}
+
+func (x *GetPlayerGameReportReply) ProtoReflect() protoreflect.Message {
+	mi := &file_history_v1_history_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetPlayerGameReportReply.ProtoReflect.Descriptor instead.
+func (*GetPlayerGameReportReply) Descriptor() ([]byte, []int) {
+	return file_history_v1_history_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *GetPlayerGameReportReply) GetItems() []*PlayerGameReportItem {
+	if x != nil {
+		return x.Items
+	}
+	return nil
+}
+
 // 创建一条记录 （创建的状态为init状态）
 type CreateGameRecordRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -880,7 +1168,7 @@ type CreateGameRecordRequest struct {
 
 func (x *CreateGameRecordRequest) Reset() {
 	*x = CreateGameRecordRequest{}
-	mi := &file_history_v1_history_proto_msgTypes[9]
+	mi := &file_history_v1_history_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -892,7 +1180,7 @@ func (x *CreateGameRecordRequest) String() string {
 func (*CreateGameRecordRequest) ProtoMessage() {}
 
 func (x *CreateGameRecordRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_history_v1_history_proto_msgTypes[9]
+	mi := &file_history_v1_history_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -905,7 +1193,7 @@ func (x *CreateGameRecordRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateGameRecordRequest.ProtoReflect.Descriptor instead.
 func (*CreateGameRecordRequest) Descriptor() ([]byte, []int) {
-	return file_history_v1_history_proto_rawDescGZIP(), []int{9}
+	return file_history_v1_history_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *CreateGameRecordRequest) GetAppId() string {
@@ -1009,7 +1297,7 @@ type CreateGameRecordReply struct {
 
 func (x *CreateGameRecordReply) Reset() {
 	*x = CreateGameRecordReply{}
-	mi := &file_history_v1_history_proto_msgTypes[10]
+	mi := &file_history_v1_history_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1021,7 +1309,7 @@ func (x *CreateGameRecordReply) String() string {
 func (*CreateGameRecordReply) ProtoMessage() {}
 
 func (x *CreateGameRecordReply) ProtoReflect() protoreflect.Message {
-	mi := &file_history_v1_history_proto_msgTypes[10]
+	mi := &file_history_v1_history_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1034,7 +1322,7 @@ func (x *CreateGameRecordReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CreateGameRecordReply.ProtoReflect.Descriptor instead.
 func (*CreateGameRecordReply) Descriptor() ([]byte, []int) {
-	return file_history_v1_history_proto_rawDescGZIP(), []int{10}
+	return file_history_v1_history_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *CreateGameRecordReply) GetTable() string {
@@ -1070,7 +1358,7 @@ type SetGameRecordStatusBetRequest struct {
 
 func (x *SetGameRecordStatusBetRequest) Reset() {
 	*x = SetGameRecordStatusBetRequest{}
-	mi := &file_history_v1_history_proto_msgTypes[11]
+	mi := &file_history_v1_history_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1082,7 +1370,7 @@ func (x *SetGameRecordStatusBetRequest) String() string {
 func (*SetGameRecordStatusBetRequest) ProtoMessage() {}
 
 func (x *SetGameRecordStatusBetRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_history_v1_history_proto_msgTypes[11]
+	mi := &file_history_v1_history_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1095,7 +1383,7 @@ func (x *SetGameRecordStatusBetRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetGameRecordStatusBetRequest.ProtoReflect.Descriptor instead.
 func (*SetGameRecordStatusBetRequest) Descriptor() ([]byte, []int) {
-	return file_history_v1_history_proto_rawDescGZIP(), []int{11}
+	return file_history_v1_history_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *SetGameRecordStatusBetRequest) GetTable() string {
@@ -1169,7 +1457,7 @@ type SetGameRecordStatusBetReply struct {
 
 func (x *SetGameRecordStatusBetReply) Reset() {
 	*x = SetGameRecordStatusBetReply{}
-	mi := &file_history_v1_history_proto_msgTypes[12]
+	mi := &file_history_v1_history_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1181,7 +1469,7 @@ func (x *SetGameRecordStatusBetReply) String() string {
 func (*SetGameRecordStatusBetReply) ProtoMessage() {}
 
 func (x *SetGameRecordStatusBetReply) ProtoReflect() protoreflect.Message {
-	mi := &file_history_v1_history_proto_msgTypes[12]
+	mi := &file_history_v1_history_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1194,7 +1482,7 @@ func (x *SetGameRecordStatusBetReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetGameRecordStatusBetReply.ProtoReflect.Descriptor instead.
 func (*SetGameRecordStatusBetReply) Descriptor() ([]byte, []int) {
-	return file_history_v1_history_proto_rawDescGZIP(), []int{12}
+	return file_history_v1_history_proto_rawDescGZIP(), []int{16}
 }
 
 // 结算的消息结构
@@ -1219,7 +1507,7 @@ type SetGameRecordStatusWinRequest struct {
 
 func (x *SetGameRecordStatusWinRequest) Reset() {
 	*x = SetGameRecordStatusWinRequest{}
-	mi := &file_history_v1_history_proto_msgTypes[13]
+	mi := &file_history_v1_history_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1231,7 +1519,7 @@ func (x *SetGameRecordStatusWinRequest) String() string {
 func (*SetGameRecordStatusWinRequest) ProtoMessage() {}
 
 func (x *SetGameRecordStatusWinRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_history_v1_history_proto_msgTypes[13]
+	mi := &file_history_v1_history_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1244,7 +1532,7 @@ func (x *SetGameRecordStatusWinRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetGameRecordStatusWinRequest.ProtoReflect.Descriptor instead.
 func (*SetGameRecordStatusWinRequest) Descriptor() ([]byte, []int) {
-	return file_history_v1_history_proto_rawDescGZIP(), []int{13}
+	return file_history_v1_history_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *SetGameRecordStatusWinRequest) GetTable() string {
@@ -1339,7 +1627,7 @@ type SetGameRecordStatusWinReply struct {
 
 func (x *SetGameRecordStatusWinReply) Reset() {
 	*x = SetGameRecordStatusWinReply{}
-	mi := &file_history_v1_history_proto_msgTypes[14]
+	mi := &file_history_v1_history_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1351,7 +1639,7 @@ func (x *SetGameRecordStatusWinReply) String() string {
 func (*SetGameRecordStatusWinReply) ProtoMessage() {}
 
 func (x *SetGameRecordStatusWinReply) ProtoReflect() protoreflect.Message {
-	mi := &file_history_v1_history_proto_msgTypes[14]
+	mi := &file_history_v1_history_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1364,7 +1652,7 @@ func (x *SetGameRecordStatusWinReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetGameRecordStatusWinReply.ProtoReflect.Descriptor instead.
 func (*SetGameRecordStatusWinReply) Descriptor() ([]byte, []int) {
-	return file_history_v1_history_proto_rawDescGZIP(), []int{14}
+	return file_history_v1_history_proto_rawDescGZIP(), []int{18}
 }
 
 // 更新为退款状态
@@ -1387,7 +1675,7 @@ type SetGameRecordStatusRefundRequest struct {
 
 func (x *SetGameRecordStatusRefundRequest) Reset() {
 	*x = SetGameRecordStatusRefundRequest{}
-	mi := &file_history_v1_history_proto_msgTypes[15]
+	mi := &file_history_v1_history_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1399,7 +1687,7 @@ func (x *SetGameRecordStatusRefundRequest) String() string {
 func (*SetGameRecordStatusRefundRequest) ProtoMessage() {}
 
 func (x *SetGameRecordStatusRefundRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_history_v1_history_proto_msgTypes[15]
+	mi := &file_history_v1_history_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1412,7 +1700,7 @@ func (x *SetGameRecordStatusRefundRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetGameRecordStatusRefundRequest.ProtoReflect.Descriptor instead.
 func (*SetGameRecordStatusRefundRequest) Descriptor() ([]byte, []int) {
-	return file_history_v1_history_proto_rawDescGZIP(), []int{15}
+	return file_history_v1_history_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *SetGameRecordStatusRefundRequest) GetTable() string {
@@ -1493,7 +1781,7 @@ type SetGameRecordStatusRefundReply struct {
 
 func (x *SetGameRecordStatusRefundReply) Reset() {
 	*x = SetGameRecordStatusRefundReply{}
-	mi := &file_history_v1_history_proto_msgTypes[16]
+	mi := &file_history_v1_history_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1505,7 +1793,7 @@ func (x *SetGameRecordStatusRefundReply) String() string {
 func (*SetGameRecordStatusRefundReply) ProtoMessage() {}
 
 func (x *SetGameRecordStatusRefundReply) ProtoReflect() protoreflect.Message {
-	mi := &file_history_v1_history_proto_msgTypes[16]
+	mi := &file_history_v1_history_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1518,7 +1806,7 @@ func (x *SetGameRecordStatusRefundReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetGameRecordStatusRefundReply.ProtoReflect.Descriptor instead.
 func (*SetGameRecordStatusRefundReply) Descriptor() ([]byte, []int) {
-	return file_history_v1_history_proto_rawDescGZIP(), []int{16}
+	return file_history_v1_history_proto_rawDescGZIP(), []int{20}
 }
 
 type SetGameRecordStatusErrorRequest struct {
@@ -1536,7 +1824,7 @@ type SetGameRecordStatusErrorRequest struct {
 
 func (x *SetGameRecordStatusErrorRequest) Reset() {
 	*x = SetGameRecordStatusErrorRequest{}
-	mi := &file_history_v1_history_proto_msgTypes[17]
+	mi := &file_history_v1_history_proto_msgTypes[21]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1548,7 +1836,7 @@ func (x *SetGameRecordStatusErrorRequest) String() string {
 func (*SetGameRecordStatusErrorRequest) ProtoMessage() {}
 
 func (x *SetGameRecordStatusErrorRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_history_v1_history_proto_msgTypes[17]
+	mi := &file_history_v1_history_proto_msgTypes[21]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1561,7 +1849,7 @@ func (x *SetGameRecordStatusErrorRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetGameRecordStatusErrorRequest.ProtoReflect.Descriptor instead.
 func (*SetGameRecordStatusErrorRequest) Descriptor() ([]byte, []int) {
-	return file_history_v1_history_proto_rawDescGZIP(), []int{17}
+	return file_history_v1_history_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *SetGameRecordStatusErrorRequest) GetTable() string {
@@ -1614,7 +1902,7 @@ type SetGameRecordStatusErrorReply struct {
 
 func (x *SetGameRecordStatusErrorReply) Reset() {
 	*x = SetGameRecordStatusErrorReply{}
-	mi := &file_history_v1_history_proto_msgTypes[18]
+	mi := &file_history_v1_history_proto_msgTypes[22]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1626,7 +1914,7 @@ func (x *SetGameRecordStatusErrorReply) String() string {
 func (*SetGameRecordStatusErrorReply) ProtoMessage() {}
 
 func (x *SetGameRecordStatusErrorReply) ProtoReflect() protoreflect.Message {
-	mi := &file_history_v1_history_proto_msgTypes[18]
+	mi := &file_history_v1_history_proto_msgTypes[22]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1639,7 +1927,7 @@ func (x *SetGameRecordStatusErrorReply) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetGameRecordStatusErrorReply.ProtoReflect.Descriptor instead.
 func (*SetGameRecordStatusErrorReply) Descriptor() ([]byte, []int) {
-	return file_history_v1_history_proto_rawDescGZIP(), []int{18}
+	return file_history_v1_history_proto_rawDescGZIP(), []int{22}
 }
 
 var File_history_v1_history_proto protoreflect.FileDescriptor
@@ -1729,7 +2017,31 @@ const file_history_v1_history_proto_rawDesc = "" +
 	"\x16GetTotalBetAndWinReply\x12\x1a\n" +
 	"\btotalBet\x18\x01 \x01(\x01R\btotalBet\x12\x1a\n" +
 	"\btotalWin\x18\x02 \x01(\x01R\btotalWin\x12 \n" +
-	"\vrecordCount\x18\x03 \x01(\x03R\vrecordCount\"\x8b\x03\n" +
+	"\vrecordCount\x18\x03 \x01(\x03R\vrecordCount\"\xf4\x01\n" +
+	"\x1aGetPlayerGameReportRequest\x12\x14\n" +
+	"\x05appId\x18\x01 \x01(\tR\x05appId\x12\x1c\n" +
+	"\tgameBrand\x18\x02 \x01(\tR\tgameBrand\x12\x1a\n" +
+	"\bplayerId\x18\x03 \x01(\tR\bplayerId\x12\x16\n" +
+	"\x06status\x18\x04 \x01(\tR\x06status\x12\x1a\n" +
+	"\bcurrency\x18\x05 \x01(\tR\bcurrency\x12\x1c\n" +
+	"\tstartTime\x18\x06 \x01(\x03R\tstartTime\x12\x18\n" +
+	"\aendTime\x18\a \x01(\x03R\aendTime\x12\x1a\n" +
+	"\btimezone\x18\b \x01(\tR\btimezone\"[\n" +
+	"\x13PlayerGameDailyStat\x12\x1a\n" +
+	"\bstatDate\x18\x01 \x01(\tR\bstatDate\x12\x10\n" +
+	"\x03bet\x18\x02 \x01(\x01R\x03bet\x12\x16\n" +
+	"\x06netWin\x18\x03 \x01(\x01R\x06netWin\"\xf2\x01\n" +
+	"\x14PlayerGameReportItem\x12\x16\n" +
+	"\x06gameId\x18\x01 \x01(\tR\x06gameId\x12\x1a\n" +
+	"\bgameType\x18\x02 \x01(\tR\bgameType\x12\x1a\n" +
+	"\btotalBet\x18\x03 \x01(\x01R\btotalBet\x12 \n" +
+	"\vtotalNetWin\x18\x04 \x01(\x01R\vtotalNetWin\x12&\n" +
+	"\x0elastReportDate\x18\x05 \x01(\tR\x0elastReportDate\x12@\n" +
+	"\n" +
+	"dailyStats\x18\x06 \x03(\v2 .ghistory.v1.PlayerGameDailyStatR\n" +
+	"dailyStats\"S\n" +
+	"\x18GetPlayerGameReportReply\x127\n" +
+	"\x05items\x18\x01 \x03(\v2!.ghistory.v1.PlayerGameReportItemR\x05items\"\x8b\x03\n" +
 	"\x17CreateGameRecordRequest\x12\x14\n" +
 	"\x05appId\x18\x01 \x01(\tR\x05appId\x12\x1c\n" +
 	"\tgameBrand\x18\x02 \x01(\tR\tgameBrand\x12\x16\n" +
@@ -1802,13 +2114,14 @@ const file_history_v1_history_proto_rawDesc = "" +
 	"\x05appId\x18\x04 \x01(\tR\x05appId\x12\x1c\n" +
 	"\tgameBrand\x18\x05 \x01(\tR\tgameBrand\x12\x18\n" +
 	"\aroundId\x18\x06 \x01(\tR\aroundId\"\x1f\n" +
-	"\x1dSetGameRecordStatusErrorReply2\xb7\a\n" +
+	"\x1dSetGameRecordStatusErrorReply2\x9e\b\n" +
 	"\n" +
 	"HistoryApi\x12Y\n" +
 	"\x0fGameHistoryList\x12#.ghistory.v1.GameHistoryListRequest\x1a!.ghistory.v1.GameHistoryListReply\x12_\n" +
 	"\x11GameHistoryDetail\x12%.ghistory.v1.GameHistoryDetailRequest\x1a#.ghistory.v1.GameHistoryDetailReply\x12_\n" +
 	"\x11GameHistoryByTime\x12%.ghistory.v1.GameHistoryByTimeRequest\x1a#.ghistory.v1.GameHistoryByTimeReply\x12_\n" +
-	"\x11GetTotalBetAndWin\x12%.ghistory.v1.GetTotalBetAndWinRequest\x1a#.ghistory.v1.GetTotalBetAndWinReply\x12\\\n" +
+	"\x11GetTotalBetAndWin\x12%.ghistory.v1.GetTotalBetAndWinRequest\x1a#.ghistory.v1.GetTotalBetAndWinReply\x12e\n" +
+	"\x13GetPlayerGameReport\x12'.ghistory.v1.GetPlayerGameReportRequest\x1a%.ghistory.v1.GetPlayerGameReportReply\x12\\\n" +
 	"\x10CreateGameRecord\x12$.ghistory.v1.CreateGameRecordRequest\x1a\".ghistory.v1.CreateGameRecordReply\x12n\n" +
 	"\x16SetGameRecordStatusBet\x12*.ghistory.v1.SetGameRecordStatusBetRequest\x1a(.ghistory.v1.SetGameRecordStatusBetReply\x12n\n" +
 	"\x16SetGameRecordStatusWin\x12*.ghistory.v1.SetGameRecordStatusWinRequest\x1a(.ghistory.v1.SetGameRecordStatusWinReply\x12w\n" +
@@ -1828,7 +2141,7 @@ func file_history_v1_history_proto_rawDescGZIP() []byte {
 	return file_history_v1_history_proto_rawDescData
 }
 
-var file_history_v1_history_proto_msgTypes = make([]protoimpl.MessageInfo, 19)
+var file_history_v1_history_proto_msgTypes = make([]protoimpl.MessageInfo, 23)
 var file_history_v1_history_proto_goTypes = []any{
 	(*GameHistoryListRequest)(nil),           // 0: ghistory.v1.GameHistoryListRequest
 	(*GameHistoryListReply)(nil),             // 1: ghistory.v1.GameHistoryListReply
@@ -1839,53 +2152,61 @@ var file_history_v1_history_proto_goTypes = []any{
 	(*GameHistoryByTimeReply)(nil),           // 6: ghistory.v1.GameHistoryByTimeReply
 	(*GetTotalBetAndWinRequest)(nil),         // 7: ghistory.v1.GetTotalBetAndWinRequest
 	(*GetTotalBetAndWinReply)(nil),           // 8: ghistory.v1.GetTotalBetAndWinReply
-	(*CreateGameRecordRequest)(nil),          // 9: ghistory.v1.CreateGameRecordRequest
-	(*CreateGameRecordReply)(nil),            // 10: ghistory.v1.CreateGameRecordReply
-	(*SetGameRecordStatusBetRequest)(nil),    // 11: ghistory.v1.SetGameRecordStatusBetRequest
-	(*SetGameRecordStatusBetReply)(nil),      // 12: ghistory.v1.SetGameRecordStatusBetReply
-	(*SetGameRecordStatusWinRequest)(nil),    // 13: ghistory.v1.SetGameRecordStatusWinRequest
-	(*SetGameRecordStatusWinReply)(nil),      // 14: ghistory.v1.SetGameRecordStatusWinReply
-	(*SetGameRecordStatusRefundRequest)(nil), // 15: ghistory.v1.SetGameRecordStatusRefundRequest
-	(*SetGameRecordStatusRefundReply)(nil),   // 16: ghistory.v1.SetGameRecordStatusRefundReply
-	(*SetGameRecordStatusErrorRequest)(nil),  // 17: ghistory.v1.SetGameRecordStatusErrorRequest
-	(*SetGameRecordStatusErrorReply)(nil),    // 18: ghistory.v1.SetGameRecordStatusErrorReply
-	(*timestamppb.Timestamp)(nil),            // 19: google.protobuf.Timestamp
+	(*GetPlayerGameReportRequest)(nil),       // 9: ghistory.v1.GetPlayerGameReportRequest
+	(*PlayerGameDailyStat)(nil),              // 10: ghistory.v1.PlayerGameDailyStat
+	(*PlayerGameReportItem)(nil),             // 11: ghistory.v1.PlayerGameReportItem
+	(*GetPlayerGameReportReply)(nil),         // 12: ghistory.v1.GetPlayerGameReportReply
+	(*CreateGameRecordRequest)(nil),          // 13: ghistory.v1.CreateGameRecordRequest
+	(*CreateGameRecordReply)(nil),            // 14: ghistory.v1.CreateGameRecordReply
+	(*SetGameRecordStatusBetRequest)(nil),    // 15: ghistory.v1.SetGameRecordStatusBetRequest
+	(*SetGameRecordStatusBetReply)(nil),      // 16: ghistory.v1.SetGameRecordStatusBetReply
+	(*SetGameRecordStatusWinRequest)(nil),    // 17: ghistory.v1.SetGameRecordStatusWinRequest
+	(*SetGameRecordStatusWinReply)(nil),      // 18: ghistory.v1.SetGameRecordStatusWinReply
+	(*SetGameRecordStatusRefundRequest)(nil), // 19: ghistory.v1.SetGameRecordStatusRefundRequest
+	(*SetGameRecordStatusRefundReply)(nil),   // 20: ghistory.v1.SetGameRecordStatusRefundReply
+	(*SetGameRecordStatusErrorRequest)(nil),  // 21: ghistory.v1.SetGameRecordStatusErrorRequest
+	(*SetGameRecordStatusErrorReply)(nil),    // 22: ghistory.v1.SetGameRecordStatusErrorReply
+	(*timestamppb.Timestamp)(nil),            // 23: google.protobuf.Timestamp
 }
 var file_history_v1_history_proto_depIdxs = []int32{
 	4,  // 0: ghistory.v1.GameHistoryListReply.list:type_name -> ghistory.v1.GameHistory
-	19, // 1: ghistory.v1.GameHistoryDetailRequest.createTime:type_name -> google.protobuf.Timestamp
+	23, // 1: ghistory.v1.GameHistoryDetailRequest.createTime:type_name -> google.protobuf.Timestamp
 	4,  // 2: ghistory.v1.GameHistoryDetailReply.data:type_name -> ghistory.v1.GameHistory
-	19, // 3: ghistory.v1.GameHistory.createTime:type_name -> google.protobuf.Timestamp
-	19, // 4: ghistory.v1.GameHistory.betTime:type_name -> google.protobuf.Timestamp
-	19, // 5: ghistory.v1.GameHistory.winTime:type_name -> google.protobuf.Timestamp
+	23, // 3: ghistory.v1.GameHistory.createTime:type_name -> google.protobuf.Timestamp
+	23, // 4: ghistory.v1.GameHistory.betTime:type_name -> google.protobuf.Timestamp
+	23, // 5: ghistory.v1.GameHistory.winTime:type_name -> google.protobuf.Timestamp
 	4,  // 6: ghistory.v1.GameHistoryByTimeReply.list:type_name -> ghistory.v1.GameHistory
-	19, // 7: ghistory.v1.CreateGameRecordRequest.createTime:type_name -> google.protobuf.Timestamp
-	19, // 8: ghistory.v1.SetGameRecordStatusBetRequest.betTime:type_name -> google.protobuf.Timestamp
-	19, // 9: ghistory.v1.SetGameRecordStatusWinRequest.winTime:type_name -> google.protobuf.Timestamp
-	19, // 10: ghistory.v1.SetGameRecordStatusRefundRequest.refundTime:type_name -> google.protobuf.Timestamp
-	0,  // 11: ghistory.v1.HistoryApi.GameHistoryList:input_type -> ghistory.v1.GameHistoryListRequest
-	2,  // 12: ghistory.v1.HistoryApi.GameHistoryDetail:input_type -> ghistory.v1.GameHistoryDetailRequest
-	5,  // 13: ghistory.v1.HistoryApi.GameHistoryByTime:input_type -> ghistory.v1.GameHistoryByTimeRequest
-	7,  // 14: ghistory.v1.HistoryApi.GetTotalBetAndWin:input_type -> ghistory.v1.GetTotalBetAndWinRequest
-	9,  // 15: ghistory.v1.HistoryApi.CreateGameRecord:input_type -> ghistory.v1.CreateGameRecordRequest
-	11, // 16: ghistory.v1.HistoryApi.SetGameRecordStatusBet:input_type -> ghistory.v1.SetGameRecordStatusBetRequest
-	13, // 17: ghistory.v1.HistoryApi.SetGameRecordStatusWin:input_type -> ghistory.v1.SetGameRecordStatusWinRequest
-	15, // 18: ghistory.v1.HistoryApi.SetGameRecordStatusRefund:input_type -> ghistory.v1.SetGameRecordStatusRefundRequest
-	17, // 19: ghistory.v1.HistoryApi.SetGameRecordStatusError:input_type -> ghistory.v1.SetGameRecordStatusErrorRequest
-	1,  // 20: ghistory.v1.HistoryApi.GameHistoryList:output_type -> ghistory.v1.GameHistoryListReply
-	3,  // 21: ghistory.v1.HistoryApi.GameHistoryDetail:output_type -> ghistory.v1.GameHistoryDetailReply
-	6,  // 22: ghistory.v1.HistoryApi.GameHistoryByTime:output_type -> ghistory.v1.GameHistoryByTimeReply
-	8,  // 23: ghistory.v1.HistoryApi.GetTotalBetAndWin:output_type -> ghistory.v1.GetTotalBetAndWinReply
-	10, // 24: ghistory.v1.HistoryApi.CreateGameRecord:output_type -> ghistory.v1.CreateGameRecordReply
-	12, // 25: ghistory.v1.HistoryApi.SetGameRecordStatusBet:output_type -> ghistory.v1.SetGameRecordStatusBetReply
-	14, // 26: ghistory.v1.HistoryApi.SetGameRecordStatusWin:output_type -> ghistory.v1.SetGameRecordStatusWinReply
-	16, // 27: ghistory.v1.HistoryApi.SetGameRecordStatusRefund:output_type -> ghistory.v1.SetGameRecordStatusRefundReply
-	18, // 28: ghistory.v1.HistoryApi.SetGameRecordStatusError:output_type -> ghistory.v1.SetGameRecordStatusErrorReply
-	20, // [20:29] is the sub-list for method output_type
-	11, // [11:20] is the sub-list for method input_type
-	11, // [11:11] is the sub-list for extension type_name
-	11, // [11:11] is the sub-list for extension extendee
-	0,  // [0:11] is the sub-list for field type_name
+	10, // 7: ghistory.v1.PlayerGameReportItem.dailyStats:type_name -> ghistory.v1.PlayerGameDailyStat
+	11, // 8: ghistory.v1.GetPlayerGameReportReply.items:type_name -> ghistory.v1.PlayerGameReportItem
+	23, // 9: ghistory.v1.CreateGameRecordRequest.createTime:type_name -> google.protobuf.Timestamp
+	23, // 10: ghistory.v1.SetGameRecordStatusBetRequest.betTime:type_name -> google.protobuf.Timestamp
+	23, // 11: ghistory.v1.SetGameRecordStatusWinRequest.winTime:type_name -> google.protobuf.Timestamp
+	23, // 12: ghistory.v1.SetGameRecordStatusRefundRequest.refundTime:type_name -> google.protobuf.Timestamp
+	0,  // 13: ghistory.v1.HistoryApi.GameHistoryList:input_type -> ghistory.v1.GameHistoryListRequest
+	2,  // 14: ghistory.v1.HistoryApi.GameHistoryDetail:input_type -> ghistory.v1.GameHistoryDetailRequest
+	5,  // 15: ghistory.v1.HistoryApi.GameHistoryByTime:input_type -> ghistory.v1.GameHistoryByTimeRequest
+	7,  // 16: ghistory.v1.HistoryApi.GetTotalBetAndWin:input_type -> ghistory.v1.GetTotalBetAndWinRequest
+	9,  // 17: ghistory.v1.HistoryApi.GetPlayerGameReport:input_type -> ghistory.v1.GetPlayerGameReportRequest
+	13, // 18: ghistory.v1.HistoryApi.CreateGameRecord:input_type -> ghistory.v1.CreateGameRecordRequest
+	15, // 19: ghistory.v1.HistoryApi.SetGameRecordStatusBet:input_type -> ghistory.v1.SetGameRecordStatusBetRequest
+	17, // 20: ghistory.v1.HistoryApi.SetGameRecordStatusWin:input_type -> ghistory.v1.SetGameRecordStatusWinRequest
+	19, // 21: ghistory.v1.HistoryApi.SetGameRecordStatusRefund:input_type -> ghistory.v1.SetGameRecordStatusRefundRequest
+	21, // 22: ghistory.v1.HistoryApi.SetGameRecordStatusError:input_type -> ghistory.v1.SetGameRecordStatusErrorRequest
+	1,  // 23: ghistory.v1.HistoryApi.GameHistoryList:output_type -> ghistory.v1.GameHistoryListReply
+	3,  // 24: ghistory.v1.HistoryApi.GameHistoryDetail:output_type -> ghistory.v1.GameHistoryDetailReply
+	6,  // 25: ghistory.v1.HistoryApi.GameHistoryByTime:output_type -> ghistory.v1.GameHistoryByTimeReply
+	8,  // 26: ghistory.v1.HistoryApi.GetTotalBetAndWin:output_type -> ghistory.v1.GetTotalBetAndWinReply
+	12, // 27: ghistory.v1.HistoryApi.GetPlayerGameReport:output_type -> ghistory.v1.GetPlayerGameReportReply
+	14, // 28: ghistory.v1.HistoryApi.CreateGameRecord:output_type -> ghistory.v1.CreateGameRecordReply
+	16, // 29: ghistory.v1.HistoryApi.SetGameRecordStatusBet:output_type -> ghistory.v1.SetGameRecordStatusBetReply
+	18, // 30: ghistory.v1.HistoryApi.SetGameRecordStatusWin:output_type -> ghistory.v1.SetGameRecordStatusWinReply
+	20, // 31: ghistory.v1.HistoryApi.SetGameRecordStatusRefund:output_type -> ghistory.v1.SetGameRecordStatusRefundReply
+	22, // 32: ghistory.v1.HistoryApi.SetGameRecordStatusError:output_type -> ghistory.v1.SetGameRecordStatusErrorReply
+	23, // [23:33] is the sub-list for method output_type
+	13, // [13:23] is the sub-list for method input_type
+	13, // [13:13] is the sub-list for extension type_name
+	13, // [13:13] is the sub-list for extension extendee
+	0,  // [0:13] is the sub-list for field type_name
 }
 
 func init() { file_history_v1_history_proto_init() }
@@ -1899,7 +2220,7 @@ func file_history_v1_history_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_history_v1_history_proto_rawDesc), len(file_history_v1_history_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   19,
+			NumMessages:   23,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
