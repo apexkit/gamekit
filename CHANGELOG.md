@@ -4,6 +4,9 @@ All notable changes to this project are tracked in the versioned changelog files
 
 ## Versions
 
+- [v1.0.20](./changelog/v1.0.20.md)
+- [v1.0.19](./changelog/v1.0.19.md)
+- [v1.0.18](./changelog/v1.0.18.md)
 - [v1.0.17](./changelog/v1.0.17.md)
 - [v1.0.16](./changelog/v1.0.16.md)
 - [v1.0.15](./changelog/v1.0.15.md)

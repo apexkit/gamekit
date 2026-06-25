@@ -1,0 +1,81 @@
+syntax = "proto3";
+package kratos.api;
+
+option go_package = "github.com/apexkit/gamekit/conf;conf";
+
+import "google/protobuf/duration.proto";
+
+message Bootstrap {
+  Server server = 1;
+  Data data = 2;
+  Log log = 3;
+  Registry registry = 4;
+  Prometheus prometheus = 5;
+  Rpc rpc = 6;
+  Aws aws = 8;
+}
+
+message Server {
+  message HTTP {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  message GRPC {
+    string network = 1;
+    string addr = 2;
+    google.protobuf.Duration timeout = 3;
+  }
+  HTTP http = 1;
+  GRPC grpc = 2;
+  string env = 3;
+}
+
+message Data {
+  message Database {
+    string name = 1;
+    string type = 2;
+    string dsn = 3;
+  }
+  message Redis {
+    string host = 1;
+    int32 port = 2;
+    string password = 3;
+    int32 database = 4;
+    bool use_tls = 5;
+  }
+  repeated Database database = 1;
+  Redis redis = 2;
+}
+
+message Log {
+  int32 level = 1;
+  string loki = 2;
+}
+
+message Registry {
+  message Consul {
+    string address = 1;
+    string scheme = 2;
+    string token = 3;
+  }
+  Consul consul = 1;
+}
+
+message Prometheus {
+  string addr = 1;
+  google.protobuf.Duration time = 2;
+}
+
+message Rpc {
+  string api = 1;
+  string rtp = 2;
+  string history = 3;
+}
+
+message Aws {
+  string access_key = 1;
+  string secret_key = 2;
+  string region = 3;
+  string bucket = 4;
+}

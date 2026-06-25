@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/middleware/metrics"
 	promclient "github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -79,6 +80,33 @@ func MustNewKratosMeter(jobName string) *KratosMeter {
 		logrus.Panic(err)
 	}
 	return meter
+}
+
+// NewMeter is an alias for MustNewKratosMeter.
+func NewMeter(jobName string) *KratosMeter {
+	return MustNewKratosMeter(jobName)
+}
+
+// ServerMiddleware returns standard Kratos server metrics middleware.
+func ServerMiddleware(m *KratosMeter) middleware.Middleware {
+	if m == nil {
+		return func(handler middleware.Handler) middleware.Handler { return handler }
+	}
+	return metrics.Server(
+		metrics.WithSeconds(m.Seconds),
+		metrics.WithRequests(m.Requests),
+	)
+}
+
+// ClientMiddleware returns standard Kratos client metrics middleware.
+func ClientMiddleware(m *KratosMeter) middleware.Middleware {
+	if m == nil {
+		return func(handler middleware.Handler) middleware.Handler { return handler }
+	}
+	return metrics.Client(
+		metrics.WithSeconds(m.Seconds),
+		metrics.WithRequests(m.Requests),
+	)
 }
 
 func Handler() http.Handler {

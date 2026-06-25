@@ -28,6 +28,10 @@ init:
 .PHONY: config
 # generate internal proto
 config:
+	protoc --proto_path=./conf \
+	       --proto_path=./third_party \
+	       --go_out=paths=source_relative:./conf \
+	       conf/conf.proto
 	protoc --proto_path=./internal \
 	       --proto_path=./third_party \
  	       --go_out=paths=source_relative:./internal \

@@ -87,6 +87,14 @@ func (dbManager *DBManager) GetDefaultGorm() *gorm.DB {
 	return dbManager.GetGorm("default")
 }
 
+// GetReadGorm returns read_only when configured, otherwise default.
+func (dbManager *DBManager) GetReadGorm() *gorm.DB {
+	if db := dbManager.GetGorm("read_only"); db != nil {
+		return db
+	}
+	return dbManager.GetGorm("default")
+}
+
 func (dbManager *DBManager) GetRedisClient(name string) *redis.Client {
 	if _, ok := dbManager.redisMap[name]; ok {
 		return dbManager.redisMap[name]
