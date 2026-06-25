@@ -1,6 +1,10 @@
 package bootstrap
 
 import (
+	"errors"
+	"os"
+	"strings"
+
 	gkconf "github.com/apexkit/gamekit/conf"
 	"github.com/go-kratos/kratos/v2/config"
 	"github.com/go-kratos/kratos/v2/config/file"
@@ -23,6 +27,26 @@ func LoadConfig(path string, dest any) error {
 
 // LoadBootstrap loads the shared gamekit Bootstrap from yaml.
 func LoadBootstrap(path string) (*gkconf.Bootstrap, error) {
+	path = strings.TrimSpace(path)
+	if path == "" {
+		path = "./configs"
+	}
+
+	// If the config path doesn't exist, initialize an empty bootstrap.
+	// This enables container images or local runs that rely on Walle (GROUP)
+	// to fully populate Data/Registry while keeping server/log defaults.
+	if _, err := os.Stat(path); err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			return &gkconf.Bootstrap{
+				Server:   &gkconf.Server{},
+				Data:     &gkconf.Data{},
+				Log:      &gkconf.Log{},
+				Registry: &gkconf.Registry{},
+			}, nil
+		}
+		return nil, err
+	}
+
 	var bc gkconf.Bootstrap
 	if err := LoadConfig(path, &bc); err != nil {
 		return nil, err
