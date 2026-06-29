@@ -3,7 +3,7 @@ package listen
 import "testing"
 
 func TestNormalizeLocal(t *testing.T) {
-	addrs := Addresses{HTTP: "0.0.0.0:5002", GRPC: "0.0.0.0:9000"}
+	addrs := Addresses{HTTP: "0.0.0.0:8080", GRPC: "0.0.0.0:9090"}
 	t.Setenv("IS_LOCAL", "true")
 	Normalize(&addrs, WithServiceName("test"))
 	if addrs.HTTP == "" || addrs.GRPC == "" {
@@ -11,9 +11,23 @@ func TestNormalizeLocal(t *testing.T) {
 	}
 }
 
+func TestNormalizeLocalEmptyConfig(t *testing.T) {
+	t.Setenv("IS_LOCAL", "true")
+	addrs := Addresses{}
+	Normalize(&addrs)
+	host, httpPort := ParseHostPort(addrs.HTTP, DefaultHost, DefaultLocalHTTPPort)
+	_, grpcPort := ParseHostPort(addrs.GRPC, DefaultHost, DefaultLocalGRPCPort)
+	if httpPort != 8080 || grpcPort != 9090 {
+		t.Fatalf("empty yaml defaults: http=%s grpc=%s", addrs.HTTP, addrs.GRPC)
+	}
+	if host != DefaultHost {
+		t.Fatalf("http host=%s", host)
+	}
+}
+
 func TestNormalizeProd(t *testing.T) {
 	t.Setenv("IS_LOCAL", "")
-	addrs := Addresses{HTTP: "0.0.0.0:5002", GRPC: "0.0.0.0:9000"}
+	addrs := Addresses{HTTP: "0.0.0.0:8080", GRPC: "0.0.0.0:9090"}
 	Normalize(&addrs)
 	if addrs.HTTP != ProdHTTPAddr || addrs.GRPC != ProdGRPCAddr {
 		t.Fatalf("got %#v", addrs)

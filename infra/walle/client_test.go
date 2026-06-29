@@ -52,7 +52,8 @@ func TestClient_GetGameGroup(t *testing.T) {
 				"mysql_config":{"internal_host":"10.0.0.5","port":3306,"connection_type":1,"account":"u","password":"p"},
 				"redis_config":{"internal_endpoint":"127.0.0.1:6379","connection_type":1,"auth":"secret","db":1},
 				"consul_config":{"internal_endpoint":"http://consul:8500","connection_type":1},
-				"s3_config":{"access_key":"ak","secret_key":"sk","region":"ap-southeast-1","bucket":"wxgame"}
+				"s3_config":{"access_key":"ak","secret_key":"sk","region":"ap-southeast-1","bucket":"wxgame"},
+				"nats_config":{"id":3,"name":"nats-生产","internal_endpoint":"nats://127.0.0.1:4222","external_endpoint":"nats://nats.example.com:4222","connection_type":1}
 			}]
 		}`))
 	}))
@@ -65,6 +66,9 @@ func TestClient_GetGameGroup(t *testing.T) {
 	}
 	if group == nil || group.GroupName != "prod_games" {
 		t.Fatalf("unexpected group: %#v", group)
+	}
+	if group.NatsConfig == nil || group.NatsConfig.ID != 3 || group.NatsConfig.Name != "nats-生产" {
+		t.Fatalf("unexpected nats_config: %#v", group.NatsConfig)
 	}
 }
 
@@ -143,5 +147,41 @@ func TestConsulEndpoint(t *testing.T) {
 	}
 	if addr != "consul.example.com:8500" || scheme != "http" {
 		t.Fatalf("got %q %q", addr, scheme)
+	}
+}
+
+func TestNatsEndpoint(t *testing.T) {
+	t.Setenv("IS_LOCAL", "")
+
+	url, err := NatsEndpoint(&NatsConfig{
+		InternalEndpoint: "nats://127.0.0.1:4222",
+		ExternalEndpoint: "nats://nats.example.com:4222",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if url != "nats://127.0.0.1:4222" {
+		t.Fatalf("got %q", url)
+	}
+
+	t.Setenv("IS_LOCAL", "true")
+	url, err = NatsEndpoint(&NatsConfig{
+		InternalEndpoint: "nats://127.0.0.1:4222",
+		ExternalEndpoint: "nats://nats.example.com:4222",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if url != "nats://nats.example.com:4222" {
+		t.Fatalf("got %q", url)
+	}
+
+	t.Setenv("IS_LOCAL", "")
+	url, err = NatsEndpoint(&NatsConfig{InternalEndpoint: "127.0.0.1:4222"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if url != "nats://127.0.0.1:4222" {
+		t.Fatalf("got %q", url)
 	}
 }

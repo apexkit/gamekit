@@ -44,8 +44,13 @@ message Data {
     int32 database = 4;
     bool use_tls = 5;
   }
+  message Eventbus {
+    string type = 1;
+    string url = 2;
+  }
   repeated Database database = 1;
   Redis redis = 2;
+  Eventbus eventbus = 3;
 }
 
 message Log {

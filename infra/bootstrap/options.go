@@ -7,6 +7,7 @@ import (
 
 	gkconf "github.com/apexkit/gamekit/conf"
 	"github.com/apexkit/gamekit/infra/listen"
+	"github.com/apexkit/gamekit/infra/resource"
 	"github.com/go-kratos/kratos/v2/log"
 )
 
@@ -24,6 +25,7 @@ type Config struct {
 	Pprof       bool
 	WithMysql   bool
 	WithRedis   bool
+	WithNats    bool
 }
 
 // Runtime is the initialized bootstrap context passed into wire providers.
@@ -31,6 +33,7 @@ type Runtime struct {
 	Bootstrap  *gkconf.Bootstrap
 	Logger     log.Logger
 	InstanceID string
+	Resources  *resource.Resource
 }
 
 // WithServiceName sets the kratos service name.
@@ -82,17 +85,24 @@ func WithPprof(enabled bool) Option {
 	}
 }
 
-// WithMysql declares mysql usage in main (wire pulls store providers when needed).
+// WithMysql declares mysql; NewRuntime installs and dials via resource.Install.
 func WithMysql(enabled bool) Option {
 	return func(c *Config) {
 		c.WithMysql = enabled
 	}
 }
 
-// WithRedis declares redis usage in main (wire pulls store providers when needed).
+// WithRedis declares redis; NewRuntime installs and dials via resource.Install.
 func WithRedis(enabled bool) Option {
 	return func(c *Config) {
 		c.WithRedis = enabled
+	}
+}
+
+// WithNats declares NATS eventbus; NewRuntime installs and dials via resource.Install.
+func WithNats(enabled bool) Option {
+	return func(c *Config) {
+		c.WithNats = enabled
 	}
 }
 
@@ -153,10 +163,21 @@ func NewRuntime(cfg *Config) (*Runtime, func(), error) {
 
 	gkconf.SetConf(bc, lg.Kratos)
 
+	res, err := resource.Install(&resource.Options{
+		WithMysql: cfg.WithMysql,
+		WithRedis: cfg.WithRedis,
+		WithNats:  cfg.WithNats,
+	}, bc, lg.Kratos)
+	if err != nil {
+		lg.Sync()
+		return nil, nil, fmt.Errorf("install resources: %w", err)
+	}
+
 	var stopPprof func(context.Context) error
 	if cfg.Pprof {
 		stopPprof, err = StartPprof(context.Background(), cfg.ServiceName, lg.Kratos)
 		if err != nil {
+			res.Close()
 			lg.Sync()
 			return nil, nil, fmt.Errorf("start pprof: %w", err)
 		}
@@ -167,9 +188,13 @@ func NewRuntime(cfg *Config) (*Runtime, func(), error) {
 		Bootstrap:  bc,
 		Logger:     lg.Kratos,
 		InstanceID: instanceID,
+		Resources:  res,
 	}
 
 	cleanup := func() {
+		if res != nil {
+			res.Close()
+		}
 		if stopPprof != nil {
 			if err := stopPprof(context.Background()); err != nil {
 				log.Errorf("shutdown pprof failed: %v", err)

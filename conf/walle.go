@@ -90,6 +90,18 @@ func ApplyByWalle(bc *Bootstrap) error {
 		}
 	}
 
+	if group.NatsConfig != nil {
+		url, err := walle.NatsEndpoint(group.NatsConfig)
+		if err != nil {
+			return fmt.Errorf("nats: %w", err)
+		}
+		bc.Data = ensureData(bc.Data)
+		bc.Data.Eventbus = &Data_Eventbus{
+			Type: "nats",
+			Url:  url,
+		}
+	}
+
 	if group.LogLevel != "" {
 		bc.Log = ensureLog(bc.Log)
 		bc.Log.Level = int32(walle.LogLevelZap(group.LogLevel))

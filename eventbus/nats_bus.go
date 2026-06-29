@@ -21,12 +21,24 @@ type NatsBus struct {
 	subs   map[string]*nats.Subscription
 }
 
-// NewNatsBus 创建一个 NATS 事件总线
+// NewNatsBus 创建一个 NATS 事件总线（首次 Publish/Subscribe 时连接）。
 func NewNatsBus(url string) EventBus {
 	return &NatsBus{
 		url:  url,
 		subs: make(map[string]*nats.Subscription),
 	}
+}
+
+// NewConnectedNatsBus 创建并立即连接 NATS，用于启动阶段验收。
+func NewConnectedNatsBus(url string) (EventBus, error) {
+	b := &NatsBus{
+		url:  url,
+		subs: make(map[string]*nats.Subscription),
+	}
+	if err := b.connect(); err != nil {
+		return nil, fmt.Errorf("nats connect %s: %w", url, err)
+	}
+	return b, nil
 }
 
 func (b *NatsBus) connect() error {

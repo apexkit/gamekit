@@ -10,8 +10,8 @@ const (
 	ProdGRPCAddr  = "0.0.0.0:9090"
 	ProdPprofAddr = "0.0.0.0:6060"
 
-	DefaultLocalHTTPPort  = 5002
-	DefaultLocalGRPCPort  = 9000
+	DefaultLocalHTTPPort  = 8080
+	DefaultLocalGRPCPort  = 9090
 	DefaultLocalPprofPort = 6060
 )
 

@@ -18,6 +18,7 @@ type GameGroup struct {
 	RedisConfig          *RedisConfig  `json:"redis_config"`
 	ConsulConfig         *ConsulConfig `json:"consul_config"`
 	S3Config             *S3Config     `json:"s3_config"`
+	NatsConfig           *NatsConfig   `json:"nats_config"`
 }
 
 type MySQLConfig struct {
@@ -57,4 +58,12 @@ type S3Config struct {
 	SecretKey string `json:"secret_key"`
 	Region    string `json:"region"`
 	Bucket    string `json:"bucket"`
+}
+
+type NatsConfig struct {
+	ID               int64  `json:"id"`
+	Name             string `json:"name"`
+	InternalEndpoint string `json:"internal_endpoint"`
+	ExternalEndpoint string `json:"external_endpoint"`
+	ConnectionType   int    `json:"connection_type"`
 }

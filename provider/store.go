@@ -6,7 +6,8 @@ import (
 	"github.com/google/wire"
 )
 
-// StoreProviderSet wires generic mysql/redis store constructors (atreus-style).
+// StoreProviderSet is deprecated: use gkbootstrap.ProviderSet with WithMysql/WithRedis in main.
+// Resources are installed in bootstrap.NewRuntime via resource.Install.
 var StoreProviderSet = wire.NewSet(
 	mysql.NewOptions,
 	mysql.NewDatabases,

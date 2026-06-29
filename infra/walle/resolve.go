@@ -89,6 +89,22 @@ func ConsulEndpoint(cfg *ConsulConfig) (address string, scheme string, err error
 	return parseServiceURL(raw)
 }
 
+// NatsEndpoint returns a NATS URL (e.g. nats://host:4222) for eventbus clients.
+func NatsEndpoint(cfg *NatsConfig) (string, error) {
+	if cfg == nil {
+		return "", fmt.Errorf("nats_config is nil")
+	}
+	endpoint := pickEndpoint(useExternalNetwork(), cfg.InternalEndpoint, cfg.ExternalEndpoint)
+	if endpoint == "" {
+		return "", fmt.Errorf("nats endpoint is empty")
+	}
+	endpoint = strings.TrimSpace(endpoint)
+	if !strings.Contains(endpoint, "://") {
+		endpoint = "nats://" + endpoint
+	}
+	return endpoint, nil
+}
+
 func parseServiceURL(raw string) (address string, scheme string, err error) {
 	raw = strings.TrimSpace(raw)
 	if raw == "" {
