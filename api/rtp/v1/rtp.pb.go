@@ -22,6 +22,58 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type SlotOptWeightsState int32
+
+const (
+	SlotOptWeightsState_SLOT_OPT_WEIGHTS_STATE_UNSPECIFIED SlotOptWeightsState = 0
+	SlotOptWeightsState_SLOT_OPT_WEIGHTS_STATE_NOT_FOUND   SlotOptWeightsState = 1 // 无权重缓存
+	SlotOptWeightsState_SLOT_OPT_WEIGHTS_STATE_TRAINING    SlotOptWeightsState = 2 // 训练中（持锁）
+	SlotOptWeightsState_SLOT_OPT_WEIGHTS_STATE_READY       SlotOptWeightsState = 3 // 已就绪
+)
+
+// Enum value maps for SlotOptWeightsState.
+var (
+	SlotOptWeightsState_name = map[int32]string{
+		0: "SLOT_OPT_WEIGHTS_STATE_UNSPECIFIED",
+		1: "SLOT_OPT_WEIGHTS_STATE_NOT_FOUND",
+		2: "SLOT_OPT_WEIGHTS_STATE_TRAINING",
+		3: "SLOT_OPT_WEIGHTS_STATE_READY",
+	}
+	SlotOptWeightsState_value = map[string]int32{
+		"SLOT_OPT_WEIGHTS_STATE_UNSPECIFIED": 0,
+		"SLOT_OPT_WEIGHTS_STATE_NOT_FOUND":   1,
+		"SLOT_OPT_WEIGHTS_STATE_TRAINING":    2,
+		"SLOT_OPT_WEIGHTS_STATE_READY":       3,
+	}
+)
+
+func (x SlotOptWeightsState) Enum() *SlotOptWeightsState {
+	p := new(SlotOptWeightsState)
+	*p = x
+	return p
+}
+
+func (x SlotOptWeightsState) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (SlotOptWeightsState) Descriptor() protoreflect.EnumDescriptor {
+	return file_rtp_v1_rtp_proto_enumTypes[0].Descriptor()
+}
+
+func (SlotOptWeightsState) Type() protoreflect.EnumType {
+	return &file_rtp_v1_rtp_proto_enumTypes[0]
+}
+
+func (x SlotOptWeightsState) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use SlotOptWeightsState.Descriptor instead.
+func (SlotOptWeightsState) EnumDescriptor() ([]byte, []int) {
+	return file_rtp_v1_rtp_proto_rawDescGZIP(), []int{0}
+}
+
 type SelectSpinRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	AppId         string                 `protobuf:"bytes,1,opt,name=appId,proto3" json:"appId,omitempty"`                             //商户
@@ -774,6 +826,294 @@ func (*ResetBaccaratReply) Descriptor() ([]byte, []int) {
 	return file_rtp_v1_rtp_proto_rawDescGZIP(), []int{9}
 }
 
+type RefreshSlotOptWeightsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GameBrand     string                 `protobuf:"bytes,1,opt,name=gameBrand,proto3" json:"gameBrand,omitempty"`                     // 游戏厂商
+	GameId        string                 `protobuf:"bytes,2,opt,name=gameId,proto3" json:"gameId,omitempty"`                           // 游戏 id
+	RoundModel    string                 `protobuf:"bytes,3,opt,name=round_model,json=roundModel,proto3" json:"round_model,omitempty"` // 模式: DEFAULT, EXTRA, BUY
+	Rtp           string                 `protobuf:"bytes,4,opt,name=rtp,proto3" json:"rtp,omitempty"`                                 // rtp 档位，如 "97"
+	Bet           float64                `protobuf:"fixed64,5,opt,name=bet,proto3" json:"bet,omitempty"`                               // jili bet 分档游戏需传 bet，其他可传 0
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RefreshSlotOptWeightsRequest) Reset() {
+	*x = RefreshSlotOptWeightsRequest{}
+	mi := &file_rtp_v1_rtp_proto_msgTypes[10]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RefreshSlotOptWeightsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RefreshSlotOptWeightsRequest) ProtoMessage() {}
+
+func (x *RefreshSlotOptWeightsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rtp_v1_rtp_proto_msgTypes[10]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RefreshSlotOptWeightsRequest.ProtoReflect.Descriptor instead.
+func (*RefreshSlotOptWeightsRequest) Descriptor() ([]byte, []int) {
+	return file_rtp_v1_rtp_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *RefreshSlotOptWeightsRequest) GetGameBrand() string {
+	if x != nil {
+		return x.GameBrand
+	}
+	return ""
+}
+
+func (x *RefreshSlotOptWeightsRequest) GetGameId() string {
+	if x != nil {
+		return x.GameId
+	}
+	return ""
+}
+
+func (x *RefreshSlotOptWeightsRequest) GetRoundModel() string {
+	if x != nil {
+		return x.RoundModel
+	}
+	return ""
+}
+
+func (x *RefreshSlotOptWeightsRequest) GetRtp() string {
+	if x != nil {
+		return x.Rtp
+	}
+	return ""
+}
+
+func (x *RefreshSlotOptWeightsRequest) GetBet() float64 {
+	if x != nil {
+		return x.Bet
+	}
+	return 0
+}
+
+type RefreshSlotOptWeightsReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	CacheKey      string                 `protobuf:"bytes,1,opt,name=cacheKey,proto3" json:"cacheKey,omitempty"` // 写入 Redis 的权重缓存 key
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RefreshSlotOptWeightsReply) Reset() {
+	*x = RefreshSlotOptWeightsReply{}
+	mi := &file_rtp_v1_rtp_proto_msgTypes[11]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RefreshSlotOptWeightsReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RefreshSlotOptWeightsReply) ProtoMessage() {}
+
+func (x *RefreshSlotOptWeightsReply) ProtoReflect() protoreflect.Message {
+	mi := &file_rtp_v1_rtp_proto_msgTypes[11]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RefreshSlotOptWeightsReply.ProtoReflect.Descriptor instead.
+func (*RefreshSlotOptWeightsReply) Descriptor() ([]byte, []int) {
+	return file_rtp_v1_rtp_proto_rawDescGZIP(), []int{11}
+}
+
+func (x *RefreshSlotOptWeightsReply) GetCacheKey() string {
+	if x != nil {
+		return x.CacheKey
+	}
+	return ""
+}
+
+type VerifySlotOptWeightsRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	GameBrand     string                 `protobuf:"bytes,1,opt,name=gameBrand,proto3" json:"gameBrand,omitempty"`                     // 游戏厂商
+	GameId        string                 `protobuf:"bytes,2,opt,name=gameId,proto3" json:"gameId,omitempty"`                           // 游戏 id
+	RoundModel    string                 `protobuf:"bytes,3,opt,name=round_model,json=roundModel,proto3" json:"round_model,omitempty"` // 模式: DEFAULT, EXTRA, BUY
+	Rtp           string                 `protobuf:"bytes,4,opt,name=rtp,proto3" json:"rtp,omitempty"`                                 // rtp 档位，如 "97"
+	Bet           float64                `protobuf:"fixed64,5,opt,name=bet,proto3" json:"bet,omitempty"`                               // jili bet 分档游戏需传 bet，其他可传 0
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifySlotOptWeightsRequest) Reset() {
+	*x = VerifySlotOptWeightsRequest{}
+	mi := &file_rtp_v1_rtp_proto_msgTypes[12]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifySlotOptWeightsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifySlotOptWeightsRequest) ProtoMessage() {}
+
+func (x *VerifySlotOptWeightsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rtp_v1_rtp_proto_msgTypes[12]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifySlotOptWeightsRequest.ProtoReflect.Descriptor instead.
+func (*VerifySlotOptWeightsRequest) Descriptor() ([]byte, []int) {
+	return file_rtp_v1_rtp_proto_rawDescGZIP(), []int{12}
+}
+
+func (x *VerifySlotOptWeightsRequest) GetGameBrand() string {
+	if x != nil {
+		return x.GameBrand
+	}
+	return ""
+}
+
+func (x *VerifySlotOptWeightsRequest) GetGameId() string {
+	if x != nil {
+		return x.GameId
+	}
+	return ""
+}
+
+func (x *VerifySlotOptWeightsRequest) GetRoundModel() string {
+	if x != nil {
+		return x.RoundModel
+	}
+	return ""
+}
+
+func (x *VerifySlotOptWeightsRequest) GetRtp() string {
+	if x != nil {
+		return x.Rtp
+	}
+	return ""
+}
+
+func (x *VerifySlotOptWeightsRequest) GetBet() float64 {
+	if x != nil {
+		return x.Bet
+	}
+	return 0
+}
+
+type VerifySlotOptWeightsReply struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	State         SlotOptWeightsState    `protobuf:"varint,1,opt,name=state,proto3,enum=rtp.v1.SlotOptWeightsState" json:"state,omitempty"` // 权重状态
+	CacheKey      string                 `protobuf:"bytes,2,opt,name=cacheKey,proto3" json:"cacheKey,omitempty"`                            // Redis 权重缓存 key
+	BaseTable     string                 `protobuf:"bytes,3,opt,name=baseTable,proto3" json:"baseTable,omitempty"`                          // 普通 spin 表名（ready 时有值）
+	FsTable       string                 `protobuf:"bytes,4,opt,name=fsTable,proto3" json:"fsTable,omitempty"`                              // freespin 表名（ready 时有值，可为空）
+	FsTrigger     float64                `protobuf:"fixed64,5,opt,name=fsTrigger,proto3" json:"fsTrigger,omitempty"`                        // freespin 触发概率（ready 时有值）
+	BaseProbCount int32                  `protobuf:"varint,6,opt,name=baseProbCount,proto3" json:"baseProbCount,omitempty"`                 // 普通 spin 权重条目数
+	FsProbCount   int32                  `protobuf:"varint,7,opt,name=fsProbCount,proto3" json:"fsProbCount,omitempty"`                     // freespin 权重条目数
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *VerifySlotOptWeightsReply) Reset() {
+	*x = VerifySlotOptWeightsReply{}
+	mi := &file_rtp_v1_rtp_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *VerifySlotOptWeightsReply) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*VerifySlotOptWeightsReply) ProtoMessage() {}
+
+func (x *VerifySlotOptWeightsReply) ProtoReflect() protoreflect.Message {
+	mi := &file_rtp_v1_rtp_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use VerifySlotOptWeightsReply.ProtoReflect.Descriptor instead.
+func (*VerifySlotOptWeightsReply) Descriptor() ([]byte, []int) {
+	return file_rtp_v1_rtp_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *VerifySlotOptWeightsReply) GetState() SlotOptWeightsState {
+	if x != nil {
+		return x.State
+	}
+	return SlotOptWeightsState_SLOT_OPT_WEIGHTS_STATE_UNSPECIFIED
+}
+
+func (x *VerifySlotOptWeightsReply) GetCacheKey() string {
+	if x != nil {
+		return x.CacheKey
+	}
+	return ""
+}
+
+func (x *VerifySlotOptWeightsReply) GetBaseTable() string {
+	if x != nil {
+		return x.BaseTable
+	}
+	return ""
+}
+
+func (x *VerifySlotOptWeightsReply) GetFsTable() string {
+	if x != nil {
+		return x.FsTable
+	}
+	return ""
+}
+
+func (x *VerifySlotOptWeightsReply) GetFsTrigger() float64 {
+	if x != nil {
+		return x.FsTrigger
+	}
+	return 0
+}
+
+func (x *VerifySlotOptWeightsReply) GetBaseProbCount() int32 {
+	if x != nil {
+		return x.BaseProbCount
+	}
+	return 0
+}
+
+func (x *VerifySlotOptWeightsReply) GetFsProbCount() int32 {
+	if x != nil {
+		return x.FsProbCount
+	}
+	return 0
+}
+
 var File_rtp_v1_rtp_proto protoreflect.FileDescriptor
 
 const file_rtp_v1_rtp_proto_rawDesc = "" +
@@ -841,14 +1181,45 @@ const file_rtp_v1_rtp_proto_rawDesc = "" +
 	"\tgameBrand\x18\x02 \x01(\tR\tgameBrand\x12\x16\n" +
 	"\x06gameId\x18\x03 \x01(\tR\x06gameId\x12\x10\n" +
 	"\x03rtp\x18\x04 \x01(\tR\x03rtp\"\x14\n" +
-	"\x12ResetBaccaratReply2\xf9\x02\n" +
+	"\x12ResetBaccaratReply\"\x99\x01\n" +
+	"\x1cRefreshSlotOptWeightsRequest\x12\x1c\n" +
+	"\tgameBrand\x18\x01 \x01(\tR\tgameBrand\x12\x16\n" +
+	"\x06gameId\x18\x02 \x01(\tR\x06gameId\x12\x1f\n" +
+	"\vround_model\x18\x03 \x01(\tR\n" +
+	"roundModel\x12\x10\n" +
+	"\x03rtp\x18\x04 \x01(\tR\x03rtp\x12\x10\n" +
+	"\x03bet\x18\x05 \x01(\x01R\x03bet\"8\n" +
+	"\x1aRefreshSlotOptWeightsReply\x12\x1a\n" +
+	"\bcacheKey\x18\x01 \x01(\tR\bcacheKey\"\x98\x01\n" +
+	"\x1bVerifySlotOptWeightsRequest\x12\x1c\n" +
+	"\tgameBrand\x18\x01 \x01(\tR\tgameBrand\x12\x16\n" +
+	"\x06gameId\x18\x02 \x01(\tR\x06gameId\x12\x1f\n" +
+	"\vround_model\x18\x03 \x01(\tR\n" +
+	"roundModel\x12\x10\n" +
+	"\x03rtp\x18\x04 \x01(\tR\x03rtp\x12\x10\n" +
+	"\x03bet\x18\x05 \x01(\x01R\x03bet\"\x88\x02\n" +
+	"\x19VerifySlotOptWeightsReply\x121\n" +
+	"\x05state\x18\x01 \x01(\x0e2\x1b.rtp.v1.SlotOptWeightsStateR\x05state\x12\x1a\n" +
+	"\bcacheKey\x18\x02 \x01(\tR\bcacheKey\x12\x1c\n" +
+	"\tbaseTable\x18\x03 \x01(\tR\tbaseTable\x12\x18\n" +
+	"\afsTable\x18\x04 \x01(\tR\afsTable\x12\x1c\n" +
+	"\tfsTrigger\x18\x05 \x01(\x01R\tfsTrigger\x12$\n" +
+	"\rbaseProbCount\x18\x06 \x01(\x05R\rbaseProbCount\x12 \n" +
+	"\vfsProbCount\x18\a \x01(\x05R\vfsProbCount*\xaa\x01\n" +
+	"\x13SlotOptWeightsState\x12&\n" +
+	"\"SLOT_OPT_WEIGHTS_STATE_UNSPECIFIED\x10\x00\x12$\n" +
+	" SLOT_OPT_WEIGHTS_STATE_NOT_FOUND\x10\x01\x12#\n" +
+	"\x1fSLOT_OPT_WEIGHTS_STATE_TRAINING\x10\x02\x12 \n" +
+	"\x1cSLOT_OPT_WEIGHTS_STATE_READY\x10\x032\xbc\x04\n" +
 	"\x06RtpApi\x12@\n" +
 	"\n" +
 	"SelectSpin\x12\x19.rtp.v1.SelectSpinRequest\x1a\x17.rtp.v1.SelectSpinReply\x12F\n" +
 	"\fGetPlayerRtp\x12\x1b.rtp.v1.GetPlayerRtpRequest\x1a\x19.rtp.v1.GetPlayerRtpReply\x12L\n" +
 	"\x0eGetBaccaratRtp\x12\x1d.rtp.v1.GetBaccaratRtpRequest\x1a\x1b.rtp.v1.GetBaccaratRtpReply\x12L\n" +
 	"\x0eSettleBaccarat\x12\x1d.rtp.v1.SettleBaccaratRequest\x1a\x1b.rtp.v1.SettleBaccaratReply\x12I\n" +
-	"\rResetBaccarat\x12\x1c.rtp.v1.ResetBaccaratRequest\x1a\x1a.rtp.v1.ResetBaccaratReplyBO\n" +
+	"\rResetBaccarat\x12\x1c.rtp.v1.ResetBaccaratRequest\x1a\x1a.rtp.v1.ResetBaccaratReply\x12a\n" +
+	"\x15RefreshSlotOptWeights\x12$.rtp.v1.RefreshSlotOptWeightsRequest\x1a\".rtp.v1.RefreshSlotOptWeightsReply\x12^\n" +
+	"\x14VerifySlotOptWeights\x12#.rtp.v1.VerifySlotOptWeightsRequest\x1a!.rtp.v1.VerifySlotOptWeightsReplyBO\n" +
 	"\x15dev.kratos.api.rtp.v1B\n" +
 	"RtpProtoV1P\x01Z(github.com/apexkit/gamekit/api/rtp/v1;v1b\x06proto3"
 
@@ -864,35 +1235,46 @@ func file_rtp_v1_rtp_proto_rawDescGZIP() []byte {
 	return file_rtp_v1_rtp_proto_rawDescData
 }
 
-var file_rtp_v1_rtp_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_rtp_v1_rtp_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_rtp_v1_rtp_proto_msgTypes = make([]protoimpl.MessageInfo, 14)
 var file_rtp_v1_rtp_proto_goTypes = []any{
-	(*SelectSpinRequest)(nil),     // 0: rtp.v1.SelectSpinRequest
-	(*SelectSpinReply)(nil),       // 1: rtp.v1.SelectSpinReply
-	(*GetPlayerRtpRequest)(nil),   // 2: rtp.v1.GetPlayerRtpRequest
-	(*GetPlayerRtpReply)(nil),     // 3: rtp.v1.GetPlayerRtpReply
-	(*GetBaccaratRtpRequest)(nil), // 4: rtp.v1.GetBaccaratRtpRequest
-	(*GetBaccaratRtpReply)(nil),   // 5: rtp.v1.GetBaccaratRtpReply
-	(*SettleBaccaratRequest)(nil), // 6: rtp.v1.SettleBaccaratRequest
-	(*SettleBaccaratReply)(nil),   // 7: rtp.v1.SettleBaccaratReply
-	(*ResetBaccaratRequest)(nil),  // 8: rtp.v1.ResetBaccaratRequest
-	(*ResetBaccaratReply)(nil),    // 9: rtp.v1.ResetBaccaratReply
+	(SlotOptWeightsState)(0),             // 0: rtp.v1.SlotOptWeightsState
+	(*SelectSpinRequest)(nil),            // 1: rtp.v1.SelectSpinRequest
+	(*SelectSpinReply)(nil),              // 2: rtp.v1.SelectSpinReply
+	(*GetPlayerRtpRequest)(nil),          // 3: rtp.v1.GetPlayerRtpRequest
+	(*GetPlayerRtpReply)(nil),            // 4: rtp.v1.GetPlayerRtpReply
+	(*GetBaccaratRtpRequest)(nil),        // 5: rtp.v1.GetBaccaratRtpRequest
+	(*GetBaccaratRtpReply)(nil),          // 6: rtp.v1.GetBaccaratRtpReply
+	(*SettleBaccaratRequest)(nil),        // 7: rtp.v1.SettleBaccaratRequest
+	(*SettleBaccaratReply)(nil),          // 8: rtp.v1.SettleBaccaratReply
+	(*ResetBaccaratRequest)(nil),         // 9: rtp.v1.ResetBaccaratRequest
+	(*ResetBaccaratReply)(nil),           // 10: rtp.v1.ResetBaccaratReply
+	(*RefreshSlotOptWeightsRequest)(nil), // 11: rtp.v1.RefreshSlotOptWeightsRequest
+	(*RefreshSlotOptWeightsReply)(nil),   // 12: rtp.v1.RefreshSlotOptWeightsReply
+	(*VerifySlotOptWeightsRequest)(nil),  // 13: rtp.v1.VerifySlotOptWeightsRequest
+	(*VerifySlotOptWeightsReply)(nil),    // 14: rtp.v1.VerifySlotOptWeightsReply
 }
 var file_rtp_v1_rtp_proto_depIdxs = []int32{
-	0, // 0: rtp.v1.RtpApi.SelectSpin:input_type -> rtp.v1.SelectSpinRequest
-	2, // 1: rtp.v1.RtpApi.GetPlayerRtp:input_type -> rtp.v1.GetPlayerRtpRequest
-	4, // 2: rtp.v1.RtpApi.GetBaccaratRtp:input_type -> rtp.v1.GetBaccaratRtpRequest
-	6, // 3: rtp.v1.RtpApi.SettleBaccarat:input_type -> rtp.v1.SettleBaccaratRequest
-	8, // 4: rtp.v1.RtpApi.ResetBaccarat:input_type -> rtp.v1.ResetBaccaratRequest
-	1, // 5: rtp.v1.RtpApi.SelectSpin:output_type -> rtp.v1.SelectSpinReply
-	3, // 6: rtp.v1.RtpApi.GetPlayerRtp:output_type -> rtp.v1.GetPlayerRtpReply
-	5, // 7: rtp.v1.RtpApi.GetBaccaratRtp:output_type -> rtp.v1.GetBaccaratRtpReply
-	7, // 8: rtp.v1.RtpApi.SettleBaccarat:output_type -> rtp.v1.SettleBaccaratReply
-	9, // 9: rtp.v1.RtpApi.ResetBaccarat:output_type -> rtp.v1.ResetBaccaratReply
-	5, // [5:10] is the sub-list for method output_type
-	0, // [0:5] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	0,  // 0: rtp.v1.VerifySlotOptWeightsReply.state:type_name -> rtp.v1.SlotOptWeightsState
+	1,  // 1: rtp.v1.RtpApi.SelectSpin:input_type -> rtp.v1.SelectSpinRequest
+	3,  // 2: rtp.v1.RtpApi.GetPlayerRtp:input_type -> rtp.v1.GetPlayerRtpRequest
+	5,  // 3: rtp.v1.RtpApi.GetBaccaratRtp:input_type -> rtp.v1.GetBaccaratRtpRequest
+	7,  // 4: rtp.v1.RtpApi.SettleBaccarat:input_type -> rtp.v1.SettleBaccaratRequest
+	9,  // 5: rtp.v1.RtpApi.ResetBaccarat:input_type -> rtp.v1.ResetBaccaratRequest
+	11, // 6: rtp.v1.RtpApi.RefreshSlotOptWeights:input_type -> rtp.v1.RefreshSlotOptWeightsRequest
+	13, // 7: rtp.v1.RtpApi.VerifySlotOptWeights:input_type -> rtp.v1.VerifySlotOptWeightsRequest
+	2,  // 8: rtp.v1.RtpApi.SelectSpin:output_type -> rtp.v1.SelectSpinReply
+	4,  // 9: rtp.v1.RtpApi.GetPlayerRtp:output_type -> rtp.v1.GetPlayerRtpReply
+	6,  // 10: rtp.v1.RtpApi.GetBaccaratRtp:output_type -> rtp.v1.GetBaccaratRtpReply
+	8,  // 11: rtp.v1.RtpApi.SettleBaccarat:output_type -> rtp.v1.SettleBaccaratReply
+	10, // 12: rtp.v1.RtpApi.ResetBaccarat:output_type -> rtp.v1.ResetBaccaratReply
+	12, // 13: rtp.v1.RtpApi.RefreshSlotOptWeights:output_type -> rtp.v1.RefreshSlotOptWeightsReply
+	14, // 14: rtp.v1.RtpApi.VerifySlotOptWeights:output_type -> rtp.v1.VerifySlotOptWeightsReply
+	8,  // [8:15] is the sub-list for method output_type
+	1,  // [1:8] is the sub-list for method input_type
+	1,  // [1:1] is the sub-list for extension type_name
+	1,  // [1:1] is the sub-list for extension extendee
+	0,  // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_rtp_v1_rtp_proto_init() }
@@ -905,13 +1287,14 @@ func file_rtp_v1_rtp_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_rtp_v1_rtp_proto_rawDesc), len(file_rtp_v1_rtp_proto_rawDesc)),
-			NumEnums:      0,
-			NumMessages:   10,
+			NumEnums:      1,
+			NumMessages:   14,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
 		GoTypes:           file_rtp_v1_rtp_proto_goTypes,
 		DependencyIndexes: file_rtp_v1_rtp_proto_depIdxs,
+		EnumInfos:         file_rtp_v1_rtp_proto_enumTypes,
 		MessageInfos:      file_rtp_v1_rtp_proto_msgTypes,
 	}.Build()
 	File_rtp_v1_rtp_proto = out.File

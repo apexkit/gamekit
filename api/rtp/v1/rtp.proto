@@ -24,6 +24,12 @@ service RtpApi {
 
   // baccarat重置库存（仅运营层面使用）
   rpc ResetBaccarat(ResetBaccaratRequest) returns (ResetBaccaratReply);
+
+  // 重新训练并更新 slotopt 抽样权重（运营/运维主动触发，权重 Redis 缓存无过期）
+  rpc RefreshSlotOptWeights(RefreshSlotOptWeightsRequest) returns (RefreshSlotOptWeightsReply);
+
+  // 查询 slotopt 权重是否训练完成（RefreshSlotOptWeights 后轮询验证）
+  rpc VerifySlotOptWeights(VerifySlotOptWeightsRequest) returns (VerifySlotOptWeightsReply);
 }
 
 message SelectSpinRequest{
@@ -103,4 +109,41 @@ message ResetBaccaratRequest{
 }
 
 message ResetBaccaratReply{
+}
+
+message RefreshSlotOptWeightsRequest{
+    string gameBrand = 1; // 游戏厂商
+    string gameId = 2; // 游戏 id
+    string round_model = 3; // 模式: DEFAULT, EXTRA, BUY
+    string rtp = 4; // rtp 档位，如 "97"
+    double bet = 5; // jili bet 分档游戏需传 bet，其他可传 0
+}
+
+message RefreshSlotOptWeightsReply{
+    string cacheKey = 1; // 写入 Redis 的权重缓存 key
+}
+
+message VerifySlotOptWeightsRequest{
+    string gameBrand = 1; // 游戏厂商
+    string gameId = 2; // 游戏 id
+    string round_model = 3; // 模式: DEFAULT, EXTRA, BUY
+    string rtp = 4; // rtp 档位，如 "97"
+    double bet = 5; // jili bet 分档游戏需传 bet，其他可传 0
+}
+
+enum SlotOptWeightsState {
+    SLOT_OPT_WEIGHTS_STATE_UNSPECIFIED = 0;
+    SLOT_OPT_WEIGHTS_STATE_NOT_FOUND = 1; // 无权重缓存
+    SLOT_OPT_WEIGHTS_STATE_TRAINING = 2; // 训练中（持锁）
+    SLOT_OPT_WEIGHTS_STATE_READY = 3; // 已就绪
+}
+
+message VerifySlotOptWeightsReply{
+    SlotOptWeightsState state = 1; // 权重状态
+    string cacheKey = 2; // Redis 权重缓存 key
+    string baseTable = 3; // 普通 spin 表名（ready 时有值）
+    string fsTable = 4; // freespin 表名（ready 时有值，可为空）
+    double fsTrigger = 5; // freespin 触发概率（ready 时有值）
+    int32 baseProbCount = 6; // 普通 spin 权重条目数
+    int32 fsProbCount = 7; // freespin 权重条目数
 }

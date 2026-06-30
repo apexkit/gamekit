@@ -19,11 +19,13 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	RtpApi_SelectSpin_FullMethodName     = "/rtp.v1.RtpApi/SelectSpin"
-	RtpApi_GetPlayerRtp_FullMethodName   = "/rtp.v1.RtpApi/GetPlayerRtp"
-	RtpApi_GetBaccaratRtp_FullMethodName = "/rtp.v1.RtpApi/GetBaccaratRtp"
-	RtpApi_SettleBaccarat_FullMethodName = "/rtp.v1.RtpApi/SettleBaccarat"
-	RtpApi_ResetBaccarat_FullMethodName  = "/rtp.v1.RtpApi/ResetBaccarat"
+	RtpApi_SelectSpin_FullMethodName            = "/rtp.v1.RtpApi/SelectSpin"
+	RtpApi_GetPlayerRtp_FullMethodName          = "/rtp.v1.RtpApi/GetPlayerRtp"
+	RtpApi_GetBaccaratRtp_FullMethodName        = "/rtp.v1.RtpApi/GetBaccaratRtp"
+	RtpApi_SettleBaccarat_FullMethodName        = "/rtp.v1.RtpApi/SettleBaccarat"
+	RtpApi_ResetBaccarat_FullMethodName         = "/rtp.v1.RtpApi/ResetBaccarat"
+	RtpApi_RefreshSlotOptWeights_FullMethodName = "/rtp.v1.RtpApi/RefreshSlotOptWeights"
+	RtpApi_VerifySlotOptWeights_FullMethodName  = "/rtp.v1.RtpApi/VerifySlotOptWeights"
 )
 
 // RtpApiClient is the client API for RtpApi service.
@@ -40,6 +42,10 @@ type RtpApiClient interface {
 	SettleBaccarat(ctx context.Context, in *SettleBaccaratRequest, opts ...grpc.CallOption) (*SettleBaccaratReply, error)
 	// baccarat重置库存（仅运营层面使用）
 	ResetBaccarat(ctx context.Context, in *ResetBaccaratRequest, opts ...grpc.CallOption) (*ResetBaccaratReply, error)
+	// 重新训练并更新 slotopt 抽样权重（运营/运维主动触发，权重 Redis 缓存无过期）
+	RefreshSlotOptWeights(ctx context.Context, in *RefreshSlotOptWeightsRequest, opts ...grpc.CallOption) (*RefreshSlotOptWeightsReply, error)
+	// 查询 slotopt 权重是否训练完成（RefreshSlotOptWeights 后轮询验证）
+	VerifySlotOptWeights(ctx context.Context, in *VerifySlotOptWeightsRequest, opts ...grpc.CallOption) (*VerifySlotOptWeightsReply, error)
 }
 
 type rtpApiClient struct {
@@ -100,6 +106,26 @@ func (c *rtpApiClient) ResetBaccarat(ctx context.Context, in *ResetBaccaratReque
 	return out, nil
 }
 
+func (c *rtpApiClient) RefreshSlotOptWeights(ctx context.Context, in *RefreshSlotOptWeightsRequest, opts ...grpc.CallOption) (*RefreshSlotOptWeightsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RefreshSlotOptWeightsReply)
+	err := c.cc.Invoke(ctx, RtpApi_RefreshSlotOptWeights_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *rtpApiClient) VerifySlotOptWeights(ctx context.Context, in *VerifySlotOptWeightsRequest, opts ...grpc.CallOption) (*VerifySlotOptWeightsReply, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(VerifySlotOptWeightsReply)
+	err := c.cc.Invoke(ctx, RtpApi_VerifySlotOptWeights_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RtpApiServer is the server API for RtpApi service.
 // All implementations must embed UnimplementedRtpApiServer
 // for forward compatibility.
@@ -114,6 +140,10 @@ type RtpApiServer interface {
 	SettleBaccarat(context.Context, *SettleBaccaratRequest) (*SettleBaccaratReply, error)
 	// baccarat重置库存（仅运营层面使用）
 	ResetBaccarat(context.Context, *ResetBaccaratRequest) (*ResetBaccaratReply, error)
+	// 重新训练并更新 slotopt 抽样权重（运营/运维主动触发，权重 Redis 缓存无过期）
+	RefreshSlotOptWeights(context.Context, *RefreshSlotOptWeightsRequest) (*RefreshSlotOptWeightsReply, error)
+	// 查询 slotopt 权重是否训练完成（RefreshSlotOptWeights 后轮询验证）
+	VerifySlotOptWeights(context.Context, *VerifySlotOptWeightsRequest) (*VerifySlotOptWeightsReply, error)
 	mustEmbedUnimplementedRtpApiServer()
 }
 
@@ -138,6 +168,12 @@ func (UnimplementedRtpApiServer) SettleBaccarat(context.Context, *SettleBaccarat
 }
 func (UnimplementedRtpApiServer) ResetBaccarat(context.Context, *ResetBaccaratRequest) (*ResetBaccaratReply, error) {
 	return nil, status.Error(codes.Unimplemented, "method ResetBaccarat not implemented")
+}
+func (UnimplementedRtpApiServer) RefreshSlotOptWeights(context.Context, *RefreshSlotOptWeightsRequest) (*RefreshSlotOptWeightsReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method RefreshSlotOptWeights not implemented")
+}
+func (UnimplementedRtpApiServer) VerifySlotOptWeights(context.Context, *VerifySlotOptWeightsRequest) (*VerifySlotOptWeightsReply, error) {
+	return nil, status.Error(codes.Unimplemented, "method VerifySlotOptWeights not implemented")
 }
 func (UnimplementedRtpApiServer) mustEmbedUnimplementedRtpApiServer() {}
 func (UnimplementedRtpApiServer) testEmbeddedByValue()                {}
@@ -250,6 +286,42 @@ func _RtpApi_ResetBaccarat_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RtpApi_RefreshSlotOptWeights_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RefreshSlotOptWeightsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RtpApiServer).RefreshSlotOptWeights(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RtpApi_RefreshSlotOptWeights_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RtpApiServer).RefreshSlotOptWeights(ctx, req.(*RefreshSlotOptWeightsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _RtpApi_VerifySlotOptWeights_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(VerifySlotOptWeightsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RtpApiServer).VerifySlotOptWeights(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RtpApi_VerifySlotOptWeights_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RtpApiServer).VerifySlotOptWeights(ctx, req.(*VerifySlotOptWeightsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RtpApi_ServiceDesc is the grpc.ServiceDesc for RtpApi service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -276,6 +348,14 @@ var RtpApi_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ResetBaccarat",
 			Handler:    _RtpApi_ResetBaccarat_Handler,
+		},
+		{
+			MethodName: "RefreshSlotOptWeights",
+			Handler:    _RtpApi_RefreshSlotOptWeights_Handler,
+		},
+		{
+			MethodName: "VerifySlotOptWeights",
+			Handler:    _RtpApi_VerifySlotOptWeights_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
