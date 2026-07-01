@@ -7,6 +7,7 @@
 package v1
 
 import (
+	v1 "github.com/apexkit/gamekit/api/common/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	_ "google.golang.org/protobuf/types/known/timestamppb"
@@ -87,6 +88,7 @@ type SelectSpinRequest struct {
 	RoundExtModel string                 `protobuf:"bytes,9,opt,name=round_ext_model,json=roundExtModel,proto3" json:"round_ext_model,omitempty"` // 扩展模式.BUY的填值[1, 2, 3],EXTRA的填[1.5, 3]
 	SpinId        int64                  `protobuf:"varint,10,opt,name=spinId,proto3" json:"spinId,omitempty"`                                    //指定本局spin样本id
 	SpinTableName string                 `protobuf:"bytes,11,opt,name=spinTableName,proto3" json:"spinTableName,omitempty"`                       //指定本局spin样本表名
+	Policy        *v1.BetPolicy          `protobuf:"bytes,12,opt,name=policy,proto3" json:"policy,omitempty"`                                     // 运营商下注回调返回的 RTP 调控策略
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -196,6 +198,13 @@ func (x *SelectSpinRequest) GetSpinTableName() string {
 		return x.SpinTableName
 	}
 	return ""
+}
+
+func (x *SelectSpinRequest) GetPolicy() *v1.BetPolicy {
+	if x != nil {
+		return x.Policy
+	}
+	return nil
 }
 
 type SelectSpinReply struct {
@@ -1118,7 +1127,7 @@ var File_rtp_v1_rtp_proto protoreflect.FileDescriptor
 
 const file_rtp_v1_rtp_proto_rawDesc = "" +
 	"\n" +
-	"\x10rtp/v1/rtp.proto\x12\x06rtp.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc4\x02\n" +
+	"\x10rtp/v1/rtp.proto\x12\x06rtp.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16common/v1/policy.proto\"\xf2\x02\n" +
 	"\x11SelectSpinRequest\x12\x14\n" +
 	"\x05appId\x18\x01 \x01(\tR\x05appId\x12\x1a\n" +
 	"\bplayerId\x18\x02 \x01(\tR\bplayerId\x12\x1c\n" +
@@ -1132,7 +1141,8 @@ const file_rtp_v1_rtp_proto_rawDesc = "" +
 	"\x0fround_ext_model\x18\t \x01(\tR\rroundExtModel\x12\x16\n" +
 	"\x06spinId\x18\n" +
 	" \x01(\x03R\x06spinId\x12$\n" +
-	"\rspinTableName\x18\v \x01(\tR\rspinTableName\"\xfe\x02\n" +
+	"\rspinTableName\x18\v \x01(\tR\rspinTableName\x12,\n" +
+	"\x06policy\x18\f \x01(\v2\x14.common.v1.BetPolicyR\x06policy\"\xfe\x02\n" +
 	"\x0fSelectSpinReply\x12\x16\n" +
 	"\x06spinId\x18\x01 \x01(\x03R\x06spinId\x12\x1c\n" +
 	"\tgameBrand\x18\x02 \x01(\tR\tgameBrand\x12\x16\n" +
@@ -1253,28 +1263,30 @@ var file_rtp_v1_rtp_proto_goTypes = []any{
 	(*RefreshSlotOptWeightsReply)(nil),   // 12: rtp.v1.RefreshSlotOptWeightsReply
 	(*VerifySlotOptWeightsRequest)(nil),  // 13: rtp.v1.VerifySlotOptWeightsRequest
 	(*VerifySlotOptWeightsReply)(nil),    // 14: rtp.v1.VerifySlotOptWeightsReply
+	(*v1.BetPolicy)(nil),                 // 15: common.v1.BetPolicy
 }
 var file_rtp_v1_rtp_proto_depIdxs = []int32{
-	0,  // 0: rtp.v1.VerifySlotOptWeightsReply.state:type_name -> rtp.v1.SlotOptWeightsState
-	1,  // 1: rtp.v1.RtpApi.SelectSpin:input_type -> rtp.v1.SelectSpinRequest
-	3,  // 2: rtp.v1.RtpApi.GetPlayerRtp:input_type -> rtp.v1.GetPlayerRtpRequest
-	5,  // 3: rtp.v1.RtpApi.GetBaccaratRtp:input_type -> rtp.v1.GetBaccaratRtpRequest
-	7,  // 4: rtp.v1.RtpApi.SettleBaccarat:input_type -> rtp.v1.SettleBaccaratRequest
-	9,  // 5: rtp.v1.RtpApi.ResetBaccarat:input_type -> rtp.v1.ResetBaccaratRequest
-	11, // 6: rtp.v1.RtpApi.RefreshSlotOptWeights:input_type -> rtp.v1.RefreshSlotOptWeightsRequest
-	13, // 7: rtp.v1.RtpApi.VerifySlotOptWeights:input_type -> rtp.v1.VerifySlotOptWeightsRequest
-	2,  // 8: rtp.v1.RtpApi.SelectSpin:output_type -> rtp.v1.SelectSpinReply
-	4,  // 9: rtp.v1.RtpApi.GetPlayerRtp:output_type -> rtp.v1.GetPlayerRtpReply
-	6,  // 10: rtp.v1.RtpApi.GetBaccaratRtp:output_type -> rtp.v1.GetBaccaratRtpReply
-	8,  // 11: rtp.v1.RtpApi.SettleBaccarat:output_type -> rtp.v1.SettleBaccaratReply
-	10, // 12: rtp.v1.RtpApi.ResetBaccarat:output_type -> rtp.v1.ResetBaccaratReply
-	12, // 13: rtp.v1.RtpApi.RefreshSlotOptWeights:output_type -> rtp.v1.RefreshSlotOptWeightsReply
-	14, // 14: rtp.v1.RtpApi.VerifySlotOptWeights:output_type -> rtp.v1.VerifySlotOptWeightsReply
-	8,  // [8:15] is the sub-list for method output_type
-	1,  // [1:8] is the sub-list for method input_type
-	1,  // [1:1] is the sub-list for extension type_name
-	1,  // [1:1] is the sub-list for extension extendee
-	0,  // [0:1] is the sub-list for field type_name
+	15, // 0: rtp.v1.SelectSpinRequest.policy:type_name -> common.v1.BetPolicy
+	0,  // 1: rtp.v1.VerifySlotOptWeightsReply.state:type_name -> rtp.v1.SlotOptWeightsState
+	1,  // 2: rtp.v1.RtpApi.SelectSpin:input_type -> rtp.v1.SelectSpinRequest
+	3,  // 3: rtp.v1.RtpApi.GetPlayerRtp:input_type -> rtp.v1.GetPlayerRtpRequest
+	5,  // 4: rtp.v1.RtpApi.GetBaccaratRtp:input_type -> rtp.v1.GetBaccaratRtpRequest
+	7,  // 5: rtp.v1.RtpApi.SettleBaccarat:input_type -> rtp.v1.SettleBaccaratRequest
+	9,  // 6: rtp.v1.RtpApi.ResetBaccarat:input_type -> rtp.v1.ResetBaccaratRequest
+	11, // 7: rtp.v1.RtpApi.RefreshSlotOptWeights:input_type -> rtp.v1.RefreshSlotOptWeightsRequest
+	13, // 8: rtp.v1.RtpApi.VerifySlotOptWeights:input_type -> rtp.v1.VerifySlotOptWeightsRequest
+	2,  // 9: rtp.v1.RtpApi.SelectSpin:output_type -> rtp.v1.SelectSpinReply
+	4,  // 10: rtp.v1.RtpApi.GetPlayerRtp:output_type -> rtp.v1.GetPlayerRtpReply
+	6,  // 11: rtp.v1.RtpApi.GetBaccaratRtp:output_type -> rtp.v1.GetBaccaratRtpReply
+	8,  // 12: rtp.v1.RtpApi.SettleBaccarat:output_type -> rtp.v1.SettleBaccaratReply
+	10, // 13: rtp.v1.RtpApi.ResetBaccarat:output_type -> rtp.v1.ResetBaccaratReply
+	12, // 14: rtp.v1.RtpApi.RefreshSlotOptWeights:output_type -> rtp.v1.RefreshSlotOptWeightsReply
+	14, // 15: rtp.v1.RtpApi.VerifySlotOptWeights:output_type -> rtp.v1.VerifySlotOptWeightsReply
+	9,  // [9:16] is the sub-list for method output_type
+	2,  // [2:9] is the sub-list for method input_type
+	2,  // [2:2] is the sub-list for extension type_name
+	2,  // [2:2] is the sub-list for extension extendee
+	0,  // [0:2] is the sub-list for field type_name
 }
 
 func init() { file_rtp_v1_rtp_proto_init() }

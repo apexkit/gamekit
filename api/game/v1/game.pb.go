@@ -7,6 +7,7 @@
 package v1
 
 import (
+	v1 "github.com/apexkit/gamekit/api/common/v1"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
@@ -278,6 +279,7 @@ type BetReply struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Currency      string                 `protobuf:"bytes,1,opt,name=currency,proto3" json:"currency,omitempty"`
 	Balance       float64                `protobuf:"fixed64,2,opt,name=balance,proto3" json:"balance,omitempty"`
+	Policy        *v1.BetPolicy          `protobuf:"bytes,3,opt,name=policy,proto3" json:"policy,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -324,6 +326,13 @@ func (x *BetReply) GetBalance() float64 {
 		return x.Balance
 	}
 	return 0
+}
+
+func (x *BetReply) GetPolicy() *v1.BetPolicy {
+	if x != nil {
+		return x.Policy
+	}
+	return nil
 }
 
 type WinRequest struct {
@@ -1570,7 +1579,7 @@ var File_game_v1_game_proto protoreflect.FileDescriptor
 
 const file_game_v1_game_proto_rawDesc = "" +
 	"\n" +
-	"\x12game/v1/game.proto\x12\agame.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"H\n" +
+	"\x12game/v1/game.proto\x12\agame.v1\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x16common/v1/policy.proto\"H\n" +
 	"\x0eBalanceRequest\x12\x1a\n" +
 	"\bplayerId\x18\x01 \x01(\tR\bplayerId\x12\x1a\n" +
 	"\bcurrency\x18\x02 \x01(\tR\bcurrency\"D\n" +
@@ -1596,10 +1605,11 @@ const file_game_v1_game_proto_rawDesc = "" +
 	"\atraceId\x18\v \x01(\tR\atraceId\x12$\n" +
 	"\rtransactionId\x18\f \x01(\tR\rtransactionId\x12\x16\n" +
 	"\x06isFree\x18\r \x01(\bR\x06isFree\x12*\n" +
-	"\x10preTransactionId\x18\x0e \x01(\tR\x10preTransactionId\"@\n" +
+	"\x10preTransactionId\x18\x0e \x01(\tR\x10preTransactionId\"n\n" +
 	"\bBetReply\x12\x1a\n" +
 	"\bcurrency\x18\x01 \x01(\tR\bcurrency\x12\x18\n" +
-	"\abalance\x18\x02 \x01(\x01R\abalance\"\xa1\x02\n" +
+	"\abalance\x18\x02 \x01(\x01R\abalance\x12,\n" +
+	"\x06policy\x18\x03 \x01(\v2\x14.common.v1.BetPolicyR\x06policy\"\xa1\x02\n" +
 	"\n" +
 	"WinRequest\x12\x1a\n" +
 	"\bplayerId\x18\x01 \x01(\tR\bplayerId\x12\x18\n" +
@@ -1765,37 +1775,39 @@ var file_game_v1_game_proto_goTypes = []any{
 	(*AppGameList)(nil),            // 17: game.v1.AppGameList
 	(*TransactionRequest)(nil),     // 18: game.v1.TransactionRequest
 	(*TransactionReply)(nil),       // 19: game.v1.TransactionReply
-	(*timestamppb.Timestamp)(nil),  // 20: google.protobuf.Timestamp
+	(*v1.BetPolicy)(nil),           // 20: common.v1.BetPolicy
+	(*timestamppb.Timestamp)(nil),  // 21: google.protobuf.Timestamp
 }
 var file_game_v1_game_proto_depIdxs = []int32{
-	12, // 0: game.v1.GameHistoryReply.list:type_name -> game.v1.GameHistory
-	20, // 1: game.v1.GameHistory.created_at:type_name -> google.protobuf.Timestamp
-	20, // 2: game.v1.JiliGameHistoryRequest.startTime:type_name -> google.protobuf.Timestamp
-	20, // 3: game.v1.JiliGameHistoryRequest.endTime:type_name -> google.protobuf.Timestamp
-	12, // 4: game.v1.JiliGameHistoryReply.list:type_name -> game.v1.GameHistory
-	17, // 5: game.v1.AppGameListReply.list:type_name -> game.v1.AppGameList
-	20, // 6: game.v1.TransactionRequest.created_at:type_name -> google.protobuf.Timestamp
-	0,  // 7: game.v1.GameApi.Balance:input_type -> game.v1.BalanceRequest
-	2,  // 8: game.v1.GameApi.Bet:input_type -> game.v1.BetRequest
-	4,  // 9: game.v1.GameApi.Win:input_type -> game.v1.WinRequest
-	6,  // 10: game.v1.GameApi.Refund:input_type -> game.v1.RefundRequest
-	10, // 11: game.v1.GameApi.GameHistoryList:input_type -> game.v1.GameHistoryRequest
-	13, // 12: game.v1.GameApi.JiliGameHistory:input_type -> game.v1.JiliGameHistoryRequest
-	15, // 13: game.v1.GameApi.AppGameList:input_type -> game.v1.AppGameListRequest
-	18, // 14: game.v1.GameApi.Transaction:input_type -> game.v1.TransactionRequest
-	1,  // 15: game.v1.GameApi.Balance:output_type -> game.v1.BalanceReply
-	3,  // 16: game.v1.GameApi.Bet:output_type -> game.v1.BetReply
-	5,  // 17: game.v1.GameApi.Win:output_type -> game.v1.WinReply
-	7,  // 18: game.v1.GameApi.Refund:output_type -> game.v1.RefundReply
-	11, // 19: game.v1.GameApi.GameHistoryList:output_type -> game.v1.GameHistoryReply
-	14, // 20: game.v1.GameApi.JiliGameHistory:output_type -> game.v1.JiliGameHistoryReply
-	16, // 21: game.v1.GameApi.AppGameList:output_type -> game.v1.AppGameListReply
-	19, // 22: game.v1.GameApi.Transaction:output_type -> game.v1.TransactionReply
-	15, // [15:23] is the sub-list for method output_type
-	7,  // [7:15] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	20, // 0: game.v1.BetReply.policy:type_name -> common.v1.BetPolicy
+	12, // 1: game.v1.GameHistoryReply.list:type_name -> game.v1.GameHistory
+	21, // 2: game.v1.GameHistory.created_at:type_name -> google.protobuf.Timestamp
+	21, // 3: game.v1.JiliGameHistoryRequest.startTime:type_name -> google.protobuf.Timestamp
+	21, // 4: game.v1.JiliGameHistoryRequest.endTime:type_name -> google.protobuf.Timestamp
+	12, // 5: game.v1.JiliGameHistoryReply.list:type_name -> game.v1.GameHistory
+	17, // 6: game.v1.AppGameListReply.list:type_name -> game.v1.AppGameList
+	21, // 7: game.v1.TransactionRequest.created_at:type_name -> google.protobuf.Timestamp
+	0,  // 8: game.v1.GameApi.Balance:input_type -> game.v1.BalanceRequest
+	2,  // 9: game.v1.GameApi.Bet:input_type -> game.v1.BetRequest
+	4,  // 10: game.v1.GameApi.Win:input_type -> game.v1.WinRequest
+	6,  // 11: game.v1.GameApi.Refund:input_type -> game.v1.RefundRequest
+	10, // 12: game.v1.GameApi.GameHistoryList:input_type -> game.v1.GameHistoryRequest
+	13, // 13: game.v1.GameApi.JiliGameHistory:input_type -> game.v1.JiliGameHistoryRequest
+	15, // 14: game.v1.GameApi.AppGameList:input_type -> game.v1.AppGameListRequest
+	18, // 15: game.v1.GameApi.Transaction:input_type -> game.v1.TransactionRequest
+	1,  // 16: game.v1.GameApi.Balance:output_type -> game.v1.BalanceReply
+	3,  // 17: game.v1.GameApi.Bet:output_type -> game.v1.BetReply
+	5,  // 18: game.v1.GameApi.Win:output_type -> game.v1.WinReply
+	7,  // 19: game.v1.GameApi.Refund:output_type -> game.v1.RefundReply
+	11, // 20: game.v1.GameApi.GameHistoryList:output_type -> game.v1.GameHistoryReply
+	14, // 21: game.v1.GameApi.JiliGameHistory:output_type -> game.v1.JiliGameHistoryReply
+	16, // 22: game.v1.GameApi.AppGameList:output_type -> game.v1.AppGameListReply
+	19, // 23: game.v1.GameApi.Transaction:output_type -> game.v1.TransactionReply
+	16, // [16:24] is the sub-list for method output_type
+	8,  // [8:16] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_game_v1_game_proto_init() }

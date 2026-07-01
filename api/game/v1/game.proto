@@ -3,6 +3,7 @@ syntax = "proto3";
 package game.v1;
 
 import "google/protobuf/timestamp.proto";
+import "common/v1/policy.proto";
 
 option go_package = "github.com/apexkit/gamekit/api/game/v1;v1";
 option java_multiple_files = true;
@@ -67,6 +68,7 @@ message BetRequest{
 message BetReply{
     string currency = 1;
     double balance = 2;
+    common.v1.BetPolicy policy = 3;
 }
 
 message WinRequest{
